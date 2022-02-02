@@ -3,7 +3,6 @@ const client = require('../client.js')
 
 //json
 const userIds = require('../json/userIds.json')
-const channelIds = require('../json/channelIds.json')
 
 //helpers
 const get = require('../helpers/get.js')
