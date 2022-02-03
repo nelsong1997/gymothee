@@ -8,6 +8,8 @@ async function wordleScoreboard ( message) {
       return;
     }
  
+    const wordleRegexPattern = /wordle [0-9]{3} [1-6]\/6/im;
+ 
     let userArray = [];
     let msgArray = []; 
 
@@ -25,7 +27,8 @@ async function wordleScoreboard ( message) {
         keepFetching = false;
       }
       for( let [ key, value ] of fetchedMessages ){
-        if( value.content.startsWith( "Wordle" ) ){
+        //if( value.content.startsWith( "Wordle" ) ){
+        if( wordleRegexPattern.test( value.content ) ){
           userArray.push( value.author.username );
           msgArray.push( value.content );
         }
