@@ -25,10 +25,12 @@ const remind = require('../commands/remind.js')
 const cancelRemind = require('../commands/cancelRemind.js')
 const viewRemind = require('../commands/viewRemind.js')
 const editRemind = require('../commands/editRemind.js')
+const wordleScoreboard = require( '../commands/wordleScoreboard.js' );
 
 async function messageCreate(message) {
-    if (message.author.bot) return;
 
+    if (message.author.bot) return;   
+ 
     let settings = { prefix: "!" }
     if (message.guild) {
         settings = await get("settings", message.guild.id)
@@ -38,6 +40,7 @@ async function messageCreate(message) {
         }
     }
     const prefix = settings.prefix
+
 
     //non-commands
     if (message.mentions && message.mentions.users.get(client.user.id)) {
@@ -53,7 +56,7 @@ async function messageCreate(message) {
     }
     
     if (!message.content.startsWith(prefix)) return //return if not a command
-
+    
     //commands
     let messageArray = message.content.slice(1).split(" ")
     let command = messageArray[0].toLowerCase()
@@ -88,7 +91,10 @@ async function messageCreate(message) {
             case "editremind":
                 editRemind(params, message)
                 return
-        }
+            case "scoreboard":
+                wordleScoreboard( message );
+                return;  
+      }
     }
 
     if (
