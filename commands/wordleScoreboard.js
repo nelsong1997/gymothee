@@ -8,6 +8,9 @@ async function wordleScoreboard ( message) {
       return;
     }
  
+    // TODO:
+    // Currently ignores X/6 failed wordles. Probably want to set to 7or8 when computing avg
+    // Need to handle if char == 'x'; sum += 7 
     const wordleRegexPattern = /wordle [0-9]{3} [1-6]\/6/im;
  
     let userArray = [];
