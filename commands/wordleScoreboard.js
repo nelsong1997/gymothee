@@ -18,7 +18,7 @@ async function wordleScoreboard ( message) {
     let keepFetching = true;
     while( keepFetching ){
       let fetchedMessages = await message.channel.messages.fetch({ 
-        limit:5,
+        limit:100,
         ...( lastFetchID && { before:lastFetchID} ),
         });
      
