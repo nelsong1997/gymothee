@@ -46,7 +46,14 @@ async function wordleScoreboard ( message) {
  
     avgArray = [];
     for( let key in sbMap ){
-      avgArray.push( { [key] : { avg : sbMap[ key ][ 'sum' ]/sbMap[ key ][ 'trys' ] , trys : sbMap[ key ][ 'trys' ] } } );  
+      avgArray.push(
+        { 
+          [key] : {
+            avg : Math.round(sbMap[ key ][ 'sum' ]/sbMap[ key ][ 'trys' ] * 100)/100,
+            trys : sbMap[ key ][ 'trys' ]
+          }
+        } 
+      );  
     }
 
     avgArray.sort( function( a, b ){ 
