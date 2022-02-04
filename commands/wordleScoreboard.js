@@ -1,12 +1,4 @@
 async function wordleScoreboard ( message) {
-
-    let channelName = message.channel.name;
-   
-    // Not wordle channel
-    if( !channelName.toLowerCase().includes( "wordle" ) ){
-      message.channel.send( "Scoreboard command can only be used in the dedicated wordle thread" );
-      return;
-    }
  
     const wordleRegexPattern = /wordle [0-9]{3} [1-6]\/6/im;
  
