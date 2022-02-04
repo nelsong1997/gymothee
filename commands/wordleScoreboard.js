@@ -74,11 +74,11 @@ async function wordleScoreboard ( message) {
     let scoreboardStr = "User, Average Score, Num Wordles\n";
     for( let ii = 0 ; ii < avgArray.length ; ii++ ){
       let userName = Object.keys( avgArray[ ii ] );
-      scoreboardStr += userName.padStart( maxNameLen ); 
+      scoreboardStr += userName[0].padStart( maxNameLen ); 
       scoreboardStr += ", ";
-      scoreboardStr += avgArray[ ii ][ userName ].avg.toFixed( 2 );
+      scoreboardStr += avgArray[ ii ][ userName ].avg.toFixed( 2 ).padStart( 4 );
       scoreboardStr += ", ";
-      scoreboardStr += avgArray[ ii ][ userName ].trys.toFixed( 2 ).padStart( 3 );
+      scoreboardStr += avgArray[ ii ][ userName ].trys.toFixed( 0 ).padStart( 3 );
       scoreboardStr += "\n";
     }
     message.channel.send( scoreboardStr );    
