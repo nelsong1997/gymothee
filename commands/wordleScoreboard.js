@@ -52,7 +52,6 @@ async function wordleScoreboard ( message) {
     for( let key in sbMap ){
      // Finds the maximum number of characters usernames to be used later for string formating
      maxNameLen = Math.max( maxNameLen, key.length );
-     
      avgArray.push( 
       { [key] : { 
           avg : sbMap[ key ][ 'sum' ]/sbMap[ key ][ 'trys' ] , 
@@ -66,8 +65,8 @@ async function wordleScoreboard ( message) {
       if( a[ aKey ].avg > b[ bKey ].avg ){ return 1; };
       if( a[ aKey ].avg < b[ bKey ].avg ){ return -1; };
       if( a[ aKey ].avg == b[ bKey ].avg ){
-        if( a[ aKey ].trys > b[ bKey ].trys ){ return 1; }
-        if( a[ aKey ].trys < b[ bKey ].trys ){ return -1; }
+        if( a[ aKey ].trys > b[ bKey ].trys ){ return -1; }
+        if( a[ aKey ].trys < b[ bKey ].trys ){ return 1; }
         if( a[ aKey ].trys == b[ bKey ].trys ){ return 0; }
       };    
     } );
@@ -77,8 +76,7 @@ async function wordleScoreboard ( message) {
     let scoreboardStr = "User, Average Score, Num Wordles\n";
     for( let ii = 0 ; ii < avgArray.length ; ii++ ){
       let userName = Object.keys( avgArray[ ii ] );
-      scoreboardStr += userName[0].padStart( maxNameLen ); 
-      scoreboardStr += ", ";
+      scoreboardStr += ( userName[0] + "," ).padEnd( maxNameLen + 2 ); 
       scoreboardStr += avgArray[ ii ][ userName ].avg.toFixed( 2 ).padStart( 4 );
       scoreboardStr += ", ";
       scoreboardStr += avgArray[ ii ][ userName ].trys.toFixed( 0 ).padStart( 3 );
