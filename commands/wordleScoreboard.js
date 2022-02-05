@@ -1,12 +1,4 @@
 async function wordleScoreboard ( message) {
-
-    let channelName = message.channel.name;
-   
-    // Not wordle channel
-    if( !channelName.toLowerCase().includes( "wordle" ) ){
-      message.channel.send( "Scoreboard command can only be used in the dedicated wordle thread" );
-      return;
-    }
  
     // TODO:
     // Currently ignores X/6 failed wordles. Probably want to set to 7or8 when computing avg
@@ -55,9 +47,17 @@ async function wordleScoreboard ( message) {
       }
     }
  
-    avgArray = [];
+    let avgArray = [];
+    let maxNameLen = 0;
     for( let key in sbMap ){
-      avgArray.push( { [key] : { avg : sbMap[ key ][ 'sum' ]/sbMap[ key ][ 'trys' ] , trys : sbMap[ key ][ 'trys' ] } } );  
+     // Finds the maximum number of characters usernames to be used later for string formating
+     maxNameLen = Math.max( maxNameLen, key.length );
+     
+     avgArray.push( 
+      { [key] : { 
+          avg : sbMap[ key ][ 'sum' ]/sbMap[ key ][ 'trys' ] , 
+         trys : sbMap[ key ][ 'trys' ] }
+      } );   
     }
 
     avgArray.sort( function( a, b ){ 
@@ -77,11 +77,11 @@ async function wordleScoreboard ( message) {
     let scoreboardStr = "User, Average Score, Num Wordles\n";
     for( let ii = 0 ; ii < avgArray.length ; ii++ ){
       let userName = Object.keys( avgArray[ ii ] );
-      scoreboardStr += userName; 
+      scoreboardStr += userName[0].padStart( maxNameLen ); 
       scoreboardStr += ", ";
-      scoreboardStr += avgArray[ ii ][ userName ].avg;
+      scoreboardStr += avgArray[ ii ][ userName ].avg.toFixed( 2 ).padStart( 4 );
       scoreboardStr += ", ";
-      scoreboardStr += avgArray[ ii ][ userName ].trys;
+      scoreboardStr += avgArray[ ii ][ userName ].trys.toFixed( 0 ).padStart( 3 );
       scoreboardStr += "\n";
     }
     message.channel.send( scoreboardStr );    

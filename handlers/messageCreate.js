@@ -28,7 +28,6 @@ const editRemind = require('../commands/editRemind.js')
 const wordleScoreboard = require( '../commands/wordleScoreboard.js' );
 
 async function messageCreate(message) {
-
     if (message.author.bot) return;   
  
     let settings = { prefix: "!" }
@@ -62,8 +61,16 @@ async function messageCreate(message) {
     let command = messageArray[0].toLowerCase()
     let params = messageArray.slice(1)
 
+    //wordle thing
     if (
-        !settings.commandChannelId || //no command channel (incl DM)
+        message.channel.name.toLowerCase().includes("wordle") &&
+        command==="scoreboard"
+    ) {
+        wordleScoreboard(message)
+    }
+
+    if (
+        !settings.commandChannelId || //there is no command channel OR this is a DM OR
         settings.commandChannelId===message.channel.id //we're in the command channel
     ) {
         switch (command) {
@@ -91,14 +98,11 @@ async function messageCreate(message) {
             case "editremind":
                 editRemind(params, message)
                 return
-            case "scoreboard":
-                wordleScoreboard( message );
-                return;  
       }
     }
 
     if (
-        message.guild && //not dm
+        message.guild && //NOT a DM AND
         (settings.commandChannelId===message.channel.id ||
         !settings.commandChannelId)
     ) { //must be in command channel or there is no command channel
