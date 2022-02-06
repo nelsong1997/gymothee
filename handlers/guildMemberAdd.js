@@ -8,6 +8,7 @@ const userIds = require('../json/userIds.json')
 const get = require('../helpers/get.js')
 
 async function guildMemberAdd (member) {
+    if (member.bot) return
     // console.log("did acknowledge new user")
     let settings = await get("settings", member.guild.id)
     if (!settings) return
