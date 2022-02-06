@@ -25,7 +25,6 @@ const remind = require('../commands/remind.js')
 const cancelRemind = require('../commands/cancelRemind.js')
 const viewRemind = require('../commands/viewRemind.js')
 const editRemind = require('../commands/editRemind.js')
-const wordleScoreboard = require( '../commands/wordleScoreboard.js' );
 
 async function messageCreate(message) {
     if (message.author.bot) return;   
@@ -60,14 +59,6 @@ async function messageCreate(message) {
     let messageArray = message.content.slice(1).split(" ")
     let command = messageArray[0].toLowerCase()
     let params = messageArray.slice(1)
-
-    //wordle thing
-    if (
-        message.channel.name.toLowerCase().includes("wordle") &&
-        command==="scoreboard"
-    ) {
-        wordleScoreboard(message)
-    }
 
     if (
         !settings.commandChannelId || //there is no command channel OR this is a DM OR
