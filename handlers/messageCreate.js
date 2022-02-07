@@ -3,6 +3,7 @@ const client = require('../client.js')
 //helpers
 const sendDm = require('../helpers/sendDm.js')
 const get = require('../helpers/get.js')
+const updateWordleScoreboard = require('../helpers/updateWordleScoreboard.js')
 
 //json
 const userIds = require('../json/userIds.json')
@@ -39,7 +40,6 @@ async function messageCreate(message) {
     }
     const prefix = settings.prefix
 
-
     //non-commands
     if (message.mentions && message.mentions.users.get(client.user.id)) {
         message.channel.send(`my prefix here is ${prefix} (try ${prefix}help)`)
@@ -52,9 +52,19 @@ async function messageCreate(message) {
         sendDm(userIds.gabe, `${message.author.username}#${message.author.discriminator} said to me: ${message.content}`)
         return
     }
-    
-    if (!message.content.startsWith(prefix)) return //return if not a command
-    
+
+    if (
+        message.guild &&
+        message.channel.name.toLowerCase().includes("wordle") &&
+        /Wordle [0-9]{3} ([1-6]|X)\/6/.test(message.content)
+    ) {
+        updateWordleScoreboard(message)
+        return
+    }
+
+    //return if not a command
+    if (!message.content.startsWith(prefix)) return
+
     //commands
     let messageArray = message.content.slice(1).split(" ")
     let command = messageArray[0].toLowerCase()

@@ -13,7 +13,7 @@ async function ready() {
     async function dailySetRemindTimeouts() {
         //first decide when to run again (next midnight)
         let now = new Date()
-        console.log(`did enter daily function ${now.toLocaleString('en-us')}`)
+        // console.log(`did enter daily function ${now.toLocaleString('en-us')}`)
         let nextMidnight = new Date()
         nextMidnight.setDate(nextMidnight.getDate() + 1)
         nextMidnight.setHours(0, 0, 0, 0) //151 #2
@@ -32,7 +32,7 @@ async function ready() {
                 await sendReminder(remind.id, true)
             } else if (tillRemind < tillNextMidnight) {
                 setTimeout(() => sendReminder(remind.id), tillRemind)
-                console.log(`did set timeout for reminder with id: ${remind.id}`)
+                // console.log(`did set timeout for reminder with id: ${remind.id}`)
             }
         }
     }
