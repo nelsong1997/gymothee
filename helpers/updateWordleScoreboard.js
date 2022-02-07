@@ -58,10 +58,8 @@ async function updateWordleScoreboard(message) {
     //we'll calc the # of spaces based on how long the longest name is
     let spc1Num = Math.floor((longestName - 5)/2)
     let spc2Num = Math.ceil((longestName - 5)/2)
-    let spc1 = ""
-    let spc2 = ""
-    for (let i=0; i<spc1Num; i++) spc1 += " " //should do this another way
-    for (let i=0; i<spc2Num; i++) spc2 += " "
+    let spc1 = " ".repeat(spc1Num)
+    let spc2 = " ".repeat(spc2Num)
 
     let sendThis = "``Wordle Scoreboard\n"
     sendThis += `rank | ${spc1}gamer${spc2} | avg score | tries \n`
@@ -71,12 +69,10 @@ async function updateWordleScoreboard(message) {
         let rankStr = (i + 1).toString()
         let rankSpc = rankStr.length===1 ? " " : ""
         let nameSpcNum = longestName - gamer.name.length
-        let nameSpc = ""
-        for (let j=0; j<nameSpcNum; j++) nameSpc += " "
+        let nameSpc = " ".repeat(nameSpcNum)
         let triesStr = gamer.tries.toString()
         let endSpcNum = 6 - triesStr.length
-        let endSpc = ""
-        for (let j=0; j<endSpcNum; j++) endSpc += " "
+        let endSpc = " ".repeat(endSpcNum)
         sendThis += `  ${rankSpc}${i+1} | ${nameSpc}${gamer.name} |   ${gamer.avgScore.toFixed(2)}    | ${gamer.tries}${endSpc}\n`
     }
     sendThis += "``"
