@@ -1,9 +1,6 @@
 //helpers
 const get = require('../helpers/get.js')
-const post = require('../helpers/post.js')
 const sendReminder = require('../helpers/sendReminder.js')
-
-// const client = require('../client.js')
 
 async function ready() {
     // console.log(`did enter ready function ${new Date().toTimeString()}`)

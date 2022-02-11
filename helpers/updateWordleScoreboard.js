@@ -50,8 +50,9 @@ async function updateWordleScoreboard(message) {
 
     scoreboardArray.sort((a,b) => {
         if (a.avgScore!==b.avgScore) return a.avgScore - b.avgScore
-        else return b.tries - a.tries
+        else return b.tries - a.tries 
     })
+    //need to rank players with a true tie with the same rank
 
     //let's make a table of the scores
     //to space the table properly we have to space around shorter names
@@ -79,7 +80,15 @@ async function updateWordleScoreboard(message) {
     if (sendThis.length > 2000) return //should do something else. this prevents crash
 
     if (scoreboardMsg) scoreboardMsg.edit(sendThis)
-    else message.channel.send(sendThis).then((newMsg) => newMsg.pin())
+    else {
+        message.channel.send(sendThis).then((newMsg) => {
+            try {
+                newMsg.pin()
+            } catch (err) {
+                console.log("failed to pin msg, probably not an admin!")
+            }
+        })
+}
 }
 
 module.exports = updateWordleScoreboard
