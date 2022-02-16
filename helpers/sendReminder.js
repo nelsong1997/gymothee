@@ -5,8 +5,22 @@ const get = require('./get.js')
 const post = require('./post.js')
 const sendDm = require('./sendDm.js')
 
-async function sendReminder(remindId, late) {
-    console.log(`did enter sendReminder function ${new Date().toTimeString()}`)
+//state
+let state = require('./state.js')
+
+async function sendReminder(remindId, intentDate, late) {
+    // console.log(`did enter sendReminder function ${new Date().toTimeString()}`)
+
+    //handle multiple reminders running at the same time
+    if (!state.isReminding) {
+        state.isReminding = true
+        console.log("running " + remindId)
+    } else {
+        console.log(`queueing ${remindId}`)
+        state.enqueuedReminders.push({ id: remindId, date: intentDate })
+        return
+    }
+
     let reminds = await get('reminds')
     if (!reminds) return
 
@@ -19,8 +33,12 @@ async function sendReminder(remindId, late) {
             break;
         }
     }
+    let remindDate = new Date(remind.date)
     if (!remind) {
         console.log(`failed to find remind with id: ${remindId}`)
+        return
+    } else if (remindDate - intentDate !== 0) {
+        console.log('intent date mismatch')
         return
     }
     
@@ -48,7 +66,6 @@ async function sendReminder(remindId, late) {
         }
     }
     if (remind.repeat) {
-        let remindDate = new Date(remind.date)
         let freqNum = remind.repeat.freqNum
         // {
         //     freqTimeUnit: "day",
@@ -70,13 +87,27 @@ async function sendReminder(remindId, late) {
                 remindDate.setFullYear(remindDate.getFullYear() + freqNum)
         }
         remind.date = remindDate
-        console.log(`sent reminders, now setting new remind based on repeat for date: ${remindDate.toLocaleString('en-us')}`)
+        // console.log(`sent reminders, now setting new remind based on repeat for date: ${remindDate.toLocaleString('en-us')}`)
     } else {
-        console.log(`sent reminders, now deleting remind with id ${remind.id}`)
+        // console.log(`sent reminders, now deleting remind with id ${remind.id}`)
         reminds = reminds.slice(0, index).concat(reminds.slice(index + 1))
     }
 
     await post('reminds', reminds)
+
+    state.isReminding = false
+
+    if (state.enqueuedReminders.length) {
+        //copy enqueued reminders
+        let reminders = state.enqueuedReminders.slice(0)
+        //delete all from queue
+        state.enqueuedReminders = []
+        for (let reminder of reminders) {
+            //we can run all reminds that were in the queue in a loop async
+            //since we can await each one
+            await sendReminder(reminder.id, reminder.date)
+        }
+    }
 }
 
 module.exports = sendReminder

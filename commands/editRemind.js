@@ -9,8 +9,6 @@ const parseRemindParams = require('../helpers/parseRemindParams.js')
 const userIds = require('../json/userIds.json')
 
 async function editRemind(params, message) {
-    //if someone is in the "who" array they can remove themselves from the arr
-    //once this is done, 
     let remindId = params[0]
     let reminds = await get('reminds')
     if (!reminds) return
@@ -23,12 +21,13 @@ async function editRemind(params, message) {
         }
     }
     let theRemind = reminds[index]
-    let oldWhom = theRemind.whom.slice(0)
     let authorId = message.author.id
     if (index===null) {
         message.channel.send(`Failed to find reminder with id: ${remindId}`)
         return
-    } else if (authorId===theRemind.creator || authorId===userIds.gabe) {
+    }
+    let oldWhom = theRemind.whom.slice(0)
+    if (authorId===theRemind.creator || authorId===userIds.gabe) {
         let keyValuePairs = params.slice(1).join(" ").split("; ")
         let result = await parseRemindParams(message, theRemind, keyValuePairs)
         if (!result) return //parse func will send msgs
@@ -46,11 +45,11 @@ async function editRemind(params, message) {
                 nextMidnight.setHours(0, 0, 0, 0)
                 if (newDate < nextMidnight) {
                     let dif = newDate - now
-                    setTimeout(() => sendReminder(theRemind.id), dif)
-                    console.log(
-                        "did immediately set timeout for reminder since new date is before midnight",
-                        theRemind.id, now.toLocaleString('en-us')
-                    )
+                    setTimeout(() => sendReminder(theRemind.id, theRemind.date), dif)
+                    // console.log(
+                    //     "did immediately set timeout for reminder since new date is before midnight",
+                    //     theRemind.id, now.toLocaleString('en-us')
+                    // )
                 }
             }
             let sendThis = ""
