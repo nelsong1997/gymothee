@@ -22,7 +22,10 @@ async function sendReminder(remindId, intentDate, late) {
     }
 
     let reminds = await get('reminds')
-    if (!reminds) return
+    if (!reminds) {
+        await onSendReminderEnd()
+        return
+    }
 
     let index = null //if the remind got cancelled we shouldn't be able to find matching id
     let remind = null
@@ -36,9 +39,11 @@ async function sendReminder(remindId, intentDate, late) {
     let remindDate = new Date(remind.date)
     if (!remind) {
         console.log(`failed to find remind with id: ${remindId}`)
+        await onSendReminderEnd()
         return
     } else if (remindDate - intentDate !== 0) {
         console.log('intent date mismatch')
+        await onSendReminderEnd()
         return
     }
     
@@ -49,7 +54,8 @@ async function sendReminder(remindId, intentDate, late) {
         //first see if there is a cmd channel. if so use that one. otherwise use the channel in the obj
         let settings = await get('settings', remind.guildId)
         if (!settings) {
-            console.log(`failed to get settings for guild id ${remind.guildId} while reminding`)
+            // console.log(`failed to get settings for guild id ${remind.guildId} while reminding`)
+            await onSendReminderEnd()
             return
         }
         let channelId = settings.commandChannelId ? settings.commandChannelId : remind.channelId
@@ -95,6 +101,10 @@ async function sendReminder(remindId, intentDate, late) {
 
     await post('reminds', reminds)
 
+    await onSendReminderEnd()
+}
+
+async function onSendReminderEnd() {
     state.isReminding = false
 
     if (state.enqueuedReminders.length) {
