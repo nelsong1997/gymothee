@@ -6,7 +6,10 @@ const post = require('./post.js')
 const sendDm = require('./sendDm.js')
 
 //state
-let state = require('./state.js')
+let state = {
+    isReminding: false,
+    enqueuedReminders: []
+}
 
 async function sendReminder(remindId, intentDate, late) {
     // console.log(`did enter sendReminder function ${new Date().toTimeString()}`)

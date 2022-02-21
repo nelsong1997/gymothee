@@ -10,24 +10,23 @@ async function viewRemind(params, message) {
 
     if (remindId==="all") {
         let authorId = message.author.id
-        sendThis = "Here are reminders that will be sent to you or that you have created:\n"
-        idArray = []
+        let sendThese = ["Here are reminders that will be sent to you or that you have created:\n"]
+        let msgIndex = 0
         let count = 0
         for (let remind of reminds) {
             if (remind.creator===authorId || remind.whom.includes(authorId)) {
-                sendThis += (await formatRemind(remind, 1) + "\n")
-                idArray.push(remind.id)
+                let newRemindStr = await formatRemind(remind, 1) + "\n"
+                let newCombinedStr = sendThese[msgIndex].slice(0) + newRemindStr
+                if (newCombinedStr.length > 2000) {
+                    msgIndex++
+                    sendThese[msgIndex] = newRemindStr
+                } else sendThese[msgIndex] = newCombinedStr
                 count++
             }
         }
         if (count===0) {
             message.channel.send("There are currently no reminders that you have created or that will be sent to you.")
-        } else if (sendThis.length > 2000) {
-            message.channel.send(
-                "Here are reminders that will be sent to you or that you have created: " +
-                idArray.join(", ")
-            )
-        } else message.channel.send(sendThis)
+        } else for (let msg of sendThese) await message.channel.send(msg)
         return
     }
 
@@ -53,42 +52,43 @@ async function viewRemind(params, message) {
             `not the creator of nor are you included in this reminder.`
         )
     }
-    async function formatRemind(remindObj) {
-        let whomArr = []
-        for (let userId of remindObj.whom) {
-            try {
-                let user = await client.users.fetch(userId)
-                whomArr.push(user.username + "#" + user.discriminator)
-            } catch (err) {
-                console.log("failed to find user with id " + userId)
-                whomArr.push("Unknown user")
-            }
+}
+
+async function formatRemind(remindObj) {
+    let whomArr = []
+    for (let userId of remindObj.whom) {
+        try {
+            let user = await client.users.fetch(userId)
+            whomArr.push(user.username + "#" + user.discriminator)
+        } catch (err) {
+            console.log("failed to find user with id " + userId)
+            whomArr.push("Unknown user")
         }
-        let delivery = ""
-        if (remindObj.deliver==="dm") delivery = "DM"
-        else if (remindObj.deliver==="pub") {
-            let guildSettings = await get("settings", remindObj.guildId)
-            let theChannelId = guildSettings.commandChannelId ? guildSettings.commandChannelId : remindObj.channelId
-            try {
-                let theChannel = await client.channels.fetch(theChannelId)
-                delivery = `Public, in: #${theChannel.name}`
-            } catch (err) {
-                delivery = "unknown?"
-            }
-            
-        }
-        let repeatValue = remindObj.repeat
-        let repeatStr = "None"
-        if (repeatValue) repeatStr = `Every ${repeatValue.freqNum} ${repeatValue.freqTimeUnit}${repeatValue.freqNum > 1 ? "s" : ""}`
-        return (
-            `**ID:** ${remindObj.id}\n` +
-            `    **Date:** ${new Date(remindObj.date).toLocaleString('en-US')}\n` +
-            `    **Message:** ${remindObj.message}\n` +
-            `    **Whom:** ${whomArr.join(", ")}\n` +
-            `    **Delivery:** ${delivery}\n` +
-            `    **Repeat:** ${repeatStr}`
-        )
     }
+    let delivery = ""
+    if (remindObj.deliver==="dm") delivery = "DM"
+    else if (remindObj.deliver==="pub") {
+        let guildSettings = await get("settings", remindObj.guildId)
+        let theChannelId = guildSettings.commandChannelId ? guildSettings.commandChannelId : remindObj.channelId
+        try {
+            let theChannel = await client.channels.fetch(theChannelId)
+            delivery = `Public, in: #${theChannel.name}`
+        } catch (err) {
+            delivery = "unknown?"
+        }
+        
+    }
+    let repeatValue = remindObj.repeat
+    let repeatStr = "None"
+    if (repeatValue) repeatStr = `Every ${repeatValue.freqNum} ${repeatValue.freqTimeUnit}${repeatValue.freqNum > 1 ? "s" : ""}`
+    return (
+        `**ID:** ${remindObj.id}\n` +
+        `    **Date:** ${new Date(remindObj.date).toLocaleString('en-US')}\n` +
+        `    **Message:** ${remindObj.message}\n` +
+        `    **Whom:** ${whomArr.join(", ")}\n` +
+        `    **Delivery:** ${delivery}\n` +
+        `    **Repeat:** ${repeatStr}`
+    )
 }
 
 module.exports = viewRemind
