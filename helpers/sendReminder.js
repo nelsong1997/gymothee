@@ -90,7 +90,7 @@ async function sendReminder(remindId, intentDate, late) {
                 remindDate.setDate(remindDate.getDate() + 7 * freqNum)
                 break;
             case "month":
-                remindDate.setMonth(remindDate.getMonth + freqNum)
+                remindDate.setMonth(remindDate.getMonth() + freqNum)
                 break;
             case "year":
                 remindDate.setFullYear(remindDate.getFullYear() + freqNum)
