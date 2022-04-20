@@ -26,12 +26,11 @@ async function ready() {
             let remindDate = new Date(remind.date)
             let tillRemind = remindDate - now
             if (tillRemind < 0) {
+                //reminder should have already been sent
                 await sendReminder(remind.id, remindDate, true)
             } else if (tillRemind < tillNextMidnight) {
+                //remind occurs today; set timeout to send it
                 setTimeout(() => sendReminder(remind.id, remindDate), tillRemind)
-                //this is creating problems when multiple reminders are triggering at the same time
-                //the func is intended to be async but it runs at the same time as itself
-                //due to the timeouts all being set the same, synchronously
                 // console.log(`did set timeout for reminder with id: ${remind.id}`)
             }
         }

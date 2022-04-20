@@ -11,6 +11,7 @@ const ready = require('./handlers/ready.js')
 const messageCreate = require('./handlers/messageCreate.js')
 const voiceStateUpdate = require('./handlers/voiceStateUpdate.js')
 const guildMemberAdd = require('./handlers/guildMemberAdd.js')
+const guildCreate = require('./handlers/guildCreate.js')
 
 client.on("ready", () => ready())
 
@@ -19,3 +20,5 @@ client.on("messageCreate", (message) => messageCreate(message))
 client.on("voiceStateUpdate", (oldMember, newMember) => voiceStateUpdate(oldMember, newMember))
 
 client.on("guildMemberAdd", (member) => guildMemberAdd(member))
+
+client.on("guildCreate", (guild) => guildCreate(guild))

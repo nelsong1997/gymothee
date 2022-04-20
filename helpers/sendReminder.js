@@ -17,9 +17,9 @@ async function sendReminder(remindId, intentDate, late) {
     //handle multiple reminders running at the same time
     if (!state.isReminding) {
         state.isReminding = true
-        console.log("running " + remindId)
+        // console.log("running " + remindId)
     } else {
-        console.log(`queueing ${remindId}`)
+        // console.log(`queueing ${remindId}`)
         state.enqueuedReminders.push({ id: remindId, date: intentDate })
         return
     }
