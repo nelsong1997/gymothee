@@ -22,3 +22,5 @@ client.on("voiceStateUpdate", (oldMember, newMember) => voiceStateUpdate(oldMemb
 client.on("guildMemberAdd", (member) => guildMemberAdd(member))
 
 client.on("guildCreate", (guild) => guildCreate(guild))
+
+// client.on("messageDelete", (message) => console.log(message.content)) //considering message un-delete function

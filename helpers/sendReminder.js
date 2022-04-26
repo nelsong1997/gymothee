@@ -39,13 +39,14 @@ async function sendReminder(remindId, intentDate, late) {
             break;
         }
     }
-    let remindDate = new Date(remind.date)
     if (!remind) {
         console.log(`failed to find remind with id: ${remindId}`)
         await onSendReminderEnd()
         return
-    } else if (remindDate - intentDate !== 0) {
-        console.log('intent date mismatch')
+    }
+    let remindDate = new Date(remind.date)
+    if (remindDate - intentDate !== 0) {
+        //this is when the date gets edited but the timeout is already set
         await onSendReminderEnd()
         return
     }
@@ -96,7 +97,20 @@ async function sendReminder(remindId, intentDate, late) {
                 remindDate.setFullYear(remindDate.getFullYear() + freqNum)
         }
         remind.date = remindDate
-        // console.log(`sent reminders, now setting new remind based on repeat for date: ${remindDate.toLocaleString('en-us')}`)
+
+        //in the rare case that the bot was offline and it sends a late reminder at midnight
+        //and then it needs to send another one the same day
+        //copied and modified from handlers/ready.js
+        let now = new Date()
+        let nextMidnight = new Date()
+        nextMidnight.setDate(nextMidnight.getDate() + 1)
+        nextMidnight.setHours(0, 0, 0, 0)
+        let tillNextMidnight = nextMidnight - now
+        let tillRemind = remindDate - now
+        if (tillRemind < tillNextMidnight) {
+            //remind occurs today; set timeout to send it
+            setTimeout(() => sendReminder(remind.id, remindDate), tillRemind)
+        }
     } else {
         // console.log(`sent reminders, now deleting remind with id ${remind.id}`)
         reminds = reminds.slice(0, index).concat(reminds.slice(index + 1))
