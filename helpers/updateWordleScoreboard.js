@@ -57,14 +57,12 @@ async function updateWordleScoreboard(message) {
     //let's make a table of the scores
     //to space the table properly we have to space around shorter names
     //we'll calc the # of spaces based on how long the longest name is
-    let spc1Num = Math.floor((longestName - 5)/2)
-    let spc2Num = Math.ceil((longestName - 5)/2)
-    let spc1 = " ".repeat(spc1Num)
-    let spc2 = " ".repeat(spc2Num)
+    let spcNum = longestName - 5
+    let spcStr = " ".repeat(spcNum)
 
     let sendThis = "``Wordle Scoreboard\n"
-    sendThis += `rank | ${spc1}gamer${spc2} | avg score | tries \n`
-    sendThis += `-----|-${spc1.replaceAll(" ", "-")}-----${spc2.replaceAll(" ", "-")}-|-----------|-------\n`
+    sendThis += `rank | ${spcStr}gamer | avg score | tries \n`
+    sendThis += `-----|${"-".repeat(spcNum)}-------|-----------|-------\n`
     for (let i=0; i<scoreboardArray.length; i++) {
         let gamer = scoreboardArray[i]
         let rankStr = (i + 1).toString()
@@ -74,7 +72,7 @@ async function updateWordleScoreboard(message) {
         let triesStr = gamer.tries.toString()
         let endSpcNum = 6 - triesStr.length
         let endSpc = " ".repeat(endSpcNum)
-        sendThis += `  ${rankSpc}${i+1} | ${nameSpc}${gamer.name} |   ${gamer.avgScore.toFixed(2)}    | ${gamer.tries}${endSpc}\n`
+        sendThis += `  ${rankSpc}${i+1} | ${nameSpc}${gamer.name} | ${gamer.avgScore.toFixed(2)}      | ${gamer.tries}${endSpc}\n`
     }
     sendThis += "``"
     if (sendThis.length > 2000) return //should do something else. this prevents crash
@@ -88,7 +86,7 @@ async function updateWordleScoreboard(message) {
                 console.log("failed to pin msg, probably not an admin!")
             }
         })
-}
+    }
 }
 
 module.exports = updateWordleScoreboard

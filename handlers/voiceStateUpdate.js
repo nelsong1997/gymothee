@@ -22,26 +22,28 @@ async function voiceStateUpdate (oldMember, newMember) {
     let logItem = null
     let oldUser = await client.users.fetch(oldMember.id)
     //there's always an old member
-    //but when they join they will have no channel id
+    //but if they are joining oldMember will have no channel id
     logItem = {
         username: oldUser.username,
         userId: oldMember.id,
         timeStamp: new Date(),
         guildId: guildId
     }
+    let oldChannel = null;
+    let newChannel = null;
     if (oldMember.channelId===null) {
-        let newChannel = await client.channels.fetch(newMember.channelId)
+        newChannel = await client.channels.fetch(newMember.channelId)
         logItem.changeType = 'join'
         logItem.newChannelName = newChannel.name
         logItem.newChannelId = newChannel.id
     } else if (newMember.channelId===null) {
-        let oldChannel = await client.channels.fetch(oldMember.channelId)
+        oldChannel = await client.channels.fetch(oldMember.channelId)
         logItem.changeType = 'leave',
         logItem.oldChannelName = oldChannel.name
         logItem.oldChannelId = oldChannel.id
     } else {
-        let newChannel = await client.channels.fetch(newMember.channelId)
-        let oldChannel = await client.channels.fetch(oldMember.channelId)
+        newChannel = await client.channels.fetch(newMember.channelId)
+        oldChannel = await client.channels.fetch(oldMember.channelId)
         logItem.changeType = 'move',
         logItem.oldChannelName = oldChannel.name
         logItem.oldChannelId = oldChannel.id
@@ -62,7 +64,16 @@ async function voiceStateUpdate (oldMember, newMember) {
         if (!voiceLog) return
         voiceLog.push(logItem)
         post("voiceLogs", voiceLog, guildId)
-    } //if live but no long channel will simply return
+    } else if (logMode==="live2") {
+        console.log(newChannel, oldChannel)
+        return
+        if (logItem.changeType==='join') newChannel.send(logItemsToString([logItem], false))
+        else if (logItem.changeType==='leave') oldChannel.send(logItemsToString([logItem], false))
+        else if (logItem.changeType==='move') {
+            newChannel.send(logItemsToString([logItem], false))
+            oldChannel.send(logItemsToString([logItem], false))
+        }
+    }
 }
 
 module.exports = voiceStateUpdate

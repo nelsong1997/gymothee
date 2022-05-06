@@ -10,25 +10,18 @@ async function logMode(params, message) {
         return
     }
     let newLogMode = params[0]
-    let validLogModes = ["off", "passive", "live"] //should probably not do this since we handle them 1 by 1 anyway
     let logChannelId = settings.logChannelId
     let prefix = settings.prefix
 
-    //escapes/non-updates
+    //now we'll always try to update and send sendThis
+    let sendThis = ""
     if (!newLogMode) {
         message.channel.send(`Current log mode: ${settings.logMode}`)
-        return
-    } else if (!validLogModes.includes(newLogMode)) {
-        message.channel.send(`Invalid log mode: ${newLogMode}`)
         return
     } else if (newLogMode===settings.logMode) {
         message.channel.send(`Log mode was already ${settings.logMode}!`)
         return
-    }
-
-    //now we'll always try to update and send sendThis
-    let sendThis = ""
-    if (newLogMode==="off") {
+    } else if (newLogMode==="off") {
         sendThis = "Voice logging disabled."
     } else if (newLogMode==="passive") {
         sendThis = `Voice logging enabled in "passive" mode! Use the ${prefix}log command to display voice logs.`
@@ -50,11 +43,17 @@ async function logMode(params, message) {
             `Voice logging enabled in "live" mode, but a channel needs to be set as the log channel. ` +
             `Please use the ${prefix}setlogchannel command.`
         )
+    } else if (newLogMode==="live2") {
+        sendThis = `Voice logging enabled. Logs will be posted in the chat areas of voice channels.`
+    } else {
+        message.channel.send(`Invalid log mode: ${newLogMode}`)
+        return
     }
+
     settings.logMode = newLogMode
     let result = post("settings", settings, guildId)
     if (!result) {
-        message.channel.send("Failed to update settings")
+        message.channel.send("Failed to update log mode")
         return
     }
     message.channel.send(sendThis)

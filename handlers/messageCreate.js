@@ -28,8 +28,8 @@ const viewRemind = require('../commands/viewRemind.js')
 const editRemind = require('../commands/editRemind.js')
 
 async function messageCreate(message) {
-    if (message.author.bot) return;   
- 
+    if (message.author.bot) return;
+
     let settings = { prefix: "!" }
     if (message.guild) {
         settings = await get("settings", message.guild.id)
