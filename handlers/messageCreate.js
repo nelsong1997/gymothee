@@ -3,7 +3,6 @@ const client = require('../client.js')
 //helpers
 const sendDm = require('../helpers/sendDm.js')
 const get = require('../helpers/get.js')
-const updateWordleScoreboard = require('../helpers/updateWordleScoreboard.js')
 
 //json
 const userIds = require('../json/userIds.json')
@@ -50,15 +49,6 @@ async function messageCreate(message) {
         //incorrectly entered commands (anything starting with prefix) will not fwd to me
         message.channel.send("Your message has been forwarded")
         sendDm(userIds.gabe, `${message.author.username}#${message.author.discriminator} said to me: ${message.content}`)
-        return
-    }
-
-    if (
-        message.guild &&
-        message.channel.name.toLowerCase().includes("wordle") &&
-        /Wordle [0-9]{3} ([1-6]|X)\/6/.test(message.content)
-    ) {
-        updateWordleScoreboard(message)
         return
     }
 
