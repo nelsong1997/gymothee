@@ -17,41 +17,109 @@ async function remind(params, message) {
         repeat: false
     }
 
-    let dateStr = params.join(" ")
-    let maybeDate = new Date(dateStr)
+    // 6/21/22
+    // remind should now be one of three types
+    // "on/at" -> specify a date for the remind to occur
+    // "after/in" -> remind after a duration
+    // custom -> specify parameters of reminder manually
+
     let whomStr = ""
-    if (message.content.includes("=")) {
-        let keyValuePairs = params.join(" ").split("; ")
+    let remindTypeStr = params[0].toLowerCase()
+    let dateSpecParams = 2 // how many params are used to specify date/time
+    if (remindTypeStr==="on" || remindTypeStr==="at") {
+        let whenArr = params.slice(1,3)
+        let dateStr = ""
+        let timeStr = ""
+        switch (strIsTimeOrDate(whenArr[0])) {
+            case "date":
+                dateStr = whenArr[0]
+                break;
+            case "time": timeStr = whenArr[0]
+                break;
+            case undefined: 
+                message.channel.send(`Error: ${whenArr[0]} is not a valid date or time.`)
+                return
+        }
+        switch (strIsTimeOrDate(whenArr[1])) {
+            case "date": 
+                if (dateStr!=="") {
+                    message.channel.send(`Error: Invalid date/time.`)
+                    return
+                } else {
+                    dateStr = whenArr[1]
+                }
+                break;
+            case "time": 
+                if (timeStr!=="") {
+                    message.channel.send(`Error: Invalid date/time.`)
+                    return
+                } else {
+                    timeStr = whenArr[1]
+                }
+                break;
+            case undefined:
+                dateSpecParams = 1
+                let rightNow = new Date()
+                if (dateStr==="") { //assume it's today
+                    dateStr = `${rightNow.getMonth() + 1}/${rightNow.getDate()}/${rightNow.getFullYear()}`
+                } else { //assume midnight on date specified
+                    timeStr = "00:00"
+                }
+        }
+
+        //handle am/pm
+        let endOfTimeStr = timeStr.slice(timeStr.length - 2, timeStr.length).toLowerCase()
+        if (endOfTimeStr==="am") timeStr = timeStr.slice(0, timeStr.length - 2)
+        else if (endOfTimeStr==="pm") {
+            let timeStrArr = timeStr.split(":")
+            let hours = Number(timeStrArr[0]) + 12
+            timeStr = hours + timeStrArr.slice(1).join(":")
+        }
+
+        newRemind.date = new Date(dateStr + timeStr)
+        if (!newRemind.date.getTime()) {
+            message.channel.send("Error: Invalid date/time.")
+            return
+        }
+
+        //this isn't right, we need to join params on a space but then cut out any mentions
+        // or pseudo mentions at the end
+        //if (params[dateSpecParams + 1]) newRemind.message = params[dateSpecParams + 1]
+
+        //first check mentions, then check for @ symbols followed by some text, #, num
+        //otherwise:
+        //whomStr = message.author.username + "#" + message.author.discriminator
+    } else if (remindTypeStr==="after" || remindTypeStr==="in") {
+        //use parseduration
+    } else if (remindTypeStr==="custom") {
+        let keyValuePairs = params.slice(1).join(" ").split("; ")
         let result = await parseRemindParams(message, newRemind, keyValuePairs)
-        if (!result) return
+        if (!result) return //errors should be sent from the func above
         newRemind = result.remind
         whomStr = result.changes.whom || message.author.username + "#" + message.author.discriminator
-    } else if (!isNaN(maybeDate.getTime())) { 
-        //maybeDate is a valid date
-        //reminder should fire on this date
-        //really need to update this because a lot of unintended stuff can get parsed as a date.
-        //probably should only accept mm/dd/yy or mm/dd/yy hh:mm
-        newRemind.date = maybeDate
-        whomStr = message.author.username + "#" + message.author.discriminator
-    } else if (params.length===1) {
-        //basic command / !remind 30s
-        //reminds after specified duration
-        let remindDate = parseDuration(params[0])
-        if (remindDate.error) {
-            message.channel.send(remindDate.error)
-            return
-        } else {
-            newRemind.date = remindDate
-            whomStr = message.author.username + "#" + message.author.discriminator
-        }
-    } else {
-        message.channel.send("Failed to parse your reminder command.")
-        return
     }
 
+    // if (params.length===1) {
+    //     //basic command / !remind 30s
+    //     //reminds after specified duration
+    //     let remindDate = parseDuration(params[0])
+    //     if (remindDate.error) {
+    //         message.channel.send(remindDate.error)
+    //         return
+    //     } else {
+    //         newRemind.date = remindDate
+    //         whomStr = message.author.username + "#" + message.author.discriminator
+    //     }
+    // } else {
+    //     message.channel.send("Failed to parse your reminder command.")
+    //     return
+    // }
+
     let result = await createReminder(newRemind)
-    if (result && result.error) message.channel.send(result.error)
-    else if (result) {
+    if (result && result.error) {
+        message.channel.send(result.error)
+        return
+    } else if (result) {
         message.channel.send(
             `Reminder with id: ${remindId} created. This reminder will fire on ` +
             `${newRemind.date.toLocaleString('en-us')}` +
@@ -135,6 +203,21 @@ function parseDuration(str) {
     remind.setMonth(remind.getMonth() + duration.mon)
     remind.setFullYear(remind.getFullYear() + duration.yrs)
     return remind
+}
+
+function strIsTimeOrDate(str) {
+    if (str.includes("/")) {
+        let dateRegex = /[1-12]|0[1-9]\/[1-31]|0[1-9]\/20[22-99]|[22-99]/
+        if (!dateRegex.test(str)) return
+        return "date"
+    } else if (str.includes(":")) {
+        let timeRegex = /0[1-9]|0-23:0[1-9]|[10-59]$|:0[1-9]|:[10-59]$|(( |$)(am|pm))/i
+        if (timeRegex.test(str)) return
+        let hours = Number(str.split(":")[0])
+        let endOfTimeStr = str.slice(str.length - 2, str.length).toLowerCase()
+        if (hours > 12 && (endOfTimeStr==="am" || endOfTimeStr==="pm")) return
+        return "time"
+    }
 }
 
 module.exports = remind

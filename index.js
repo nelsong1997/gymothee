@@ -15,7 +15,13 @@ const guildCreate = require('./handlers/guildCreate.js')
 
 client.on("ready", () => ready())
 
-client.on("messageCreate", (message) => messageCreate(message))
+client.on("messageCreate", (message) => {
+    try {
+        messageCreate(message)
+    } catch (err) {
+        console.log(`I had trouble with this message:\n${message}\n${error}`)
+    }
+})
 
 client.on("voiceStateUpdate", (oldMember, newMember) => voiceStateUpdate(oldMember, newMember))
 
