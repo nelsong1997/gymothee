@@ -2,6 +2,7 @@
 const createReminder = require('../helpers/createReminder.js')
 const parseRemindParams = require('../helpers/parseRemindParams.js')
 const sendDm = require('../helpers/sendDm.js')
+const findUser = require('../helpers/findUser.js')
 
 async function remind(params, message) {
     let remindId = '_' + Math.random().toString(36).slice(2, 11); //gen unique id for remind
@@ -76,20 +77,65 @@ async function remind(params, message) {
             timeStr = hours + timeStrArr.slice(1).join(":")
         }
 
+        //Make sure we have a real date
         newRemind.date = new Date(dateStr + timeStr)
         if (!newRemind.date.getTime()) {
             message.channel.send("Error: Invalid date/time.")
             return
         }
 
-        //this isn't right, we need to join params on a space but then cut out any mentions
-        // or pseudo mentions at the end
-        //if (params[dateSpecParams + 1]) newRemind.message = params[dateSpecParams + 1]
+        //need to find where mentions/pseudo mentions are, if they exist
+        let msgAndRecips = params.slice(dateSpecParams + 1).join(" ")
+        let trueIndexOfAtSymbol = 0 //index within msgAndRecips
+        let fakeIndexOfAtSymbol = 0 //index within remainingMsg
+        let remainingMsg = msgAndRecips
+        let msgNoRecips = msgAndRecips
+        let recips = ""
+        while (indexOfAtSymbol < msgAndRecips.length) {
+            fakeIndexOfAtSymbol = remainingMsg.search("@")
+            if (fakeIndexOfAtSymbol===-1) break; //@ not found
+            trueIndexOfAtSymbol += fakeIndexOfAtSymbol
+            remainingMsg = remainingMsg.slice(fakeIndexOfAtSymbol)
+            if (remainingMsg[1]!==" ") {
+                msgNoRecips = msgAndRecips.slice(0, trueIndexOfAtSymbol)
+                recips = msgAndRecips.slice(trueIndexOfAtSymbol)
+                break;
+            }
+            remainingMsg = remainingMsg.slice(1)
+        }
 
-        //first check mentions, then check for @ symbols followed by some text, #, num
-        //otherwise:
-        //whomStr = message.author.username + "#" + message.author.discriminator
+        //find whom to send the reminder to
+        let whomUsernamesArr = []
+        //if there are mentions, just worry about those
+        if (message.mentions.length > 0) {
+            for (let user of message.mentions) {
+                newRemind.whom.push(user.id)
+                whomUsernamesArr.push(user.username + "#" + user.discriminator)
+            }
+        } else if (recips) {
+            let recipUsersArr = recips.split(", ")
+            //for now only handle id or name#discriminator
+            for (let user of recipUsersArr) {
+                if (!user.startsWith("@")) {
+                    message.channel.send("Error: couldn't parse recipients")
+                    return
+                }
+                let theUser = await findUser(str)
+                if (!theUser) {
+                    message.channel.send(`Error: couldn't find user for recipient: "${user}"`)
+                    return
+                }
+                newRemind.whom.push(theUser.id)
+                whomUsernamesArr.push(theUser.username + "#" + theUser.discriminator)
+            }
+        } else {
+            whomStr = message.author.username + "#" + message.author.discriminator
+            newRemind.whom = [message.author.id]
+        }
+        console.log(newRemind)
+        return
     } else if (remindTypeStr==="after" || remindTypeStr==="in") {
+        return
         //use parseduration
     } else if (remindTypeStr==="custom") {
         let keyValuePairs = params.slice(1).join(" ").split("; ")
