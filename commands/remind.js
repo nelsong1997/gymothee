@@ -44,7 +44,7 @@ async function remind(params, message) {
         switch (strIsTimeOrDate(whenArr[1])) {
             case "date": 
                 if (dateStr!=="") {
-                    message.channel.send(`Error: Invalid date/time.`)
+                    message.channel.send(`Error: Invalid date/time 1.`)
                     return
                 } else {
                     dateStr = whenArr[1]
@@ -52,7 +52,7 @@ async function remind(params, message) {
                 break;
             case "time": 
                 if (timeStr!=="") {
-                    message.channel.send(`Error: Invalid date/time.`)
+                    message.channel.send(`Error: Invalid date/time 2.`)
                     return
                 } else {
                     timeStr = whenArr[1]
@@ -69,18 +69,21 @@ async function remind(params, message) {
         }
 
         //handle am/pm
+        console.log(timeStr)
         let endOfTimeStr = timeStr.slice(timeStr.length - 2, timeStr.length).toLowerCase()
         if (endOfTimeStr==="am") timeStr = timeStr.slice(0, timeStr.length - 2)
         else if (endOfTimeStr==="pm") {
             let timeStrArr = timeStr.split(":")
             let hours = Number(timeStrArr[0]) + 12
-            timeStr = hours + timeStrArr.slice(1).join(":")
+            timeStr = hours + ":" + timeStrArr.slice(1).join(":")
+            timeStr = timeStr.slice(0, timeStr.length - 2)
         }
 
         //Make sure we have a real date
-        newRemind.date = new Date(dateStr + timeStr)
+        newRemind.date = new Date(dateStr + " " + timeStr)
         if (!newRemind.date.getTime()) {
-            message.channel.send("Error: Invalid date/time.")
+            console.log(dateStr, timeStr)
+            message.channel.send("Error: Invalid date/time 3.")
             return
         }
 
@@ -91,7 +94,7 @@ async function remind(params, message) {
         let remainingMsg = msgAndRecips
         let msgNoRecips = msgAndRecips
         let recips = ""
-        while (indexOfAtSymbol < msgAndRecips.length) {
+        while (trueIndexOfAtSymbol < msgAndRecips.length) {
             fakeIndexOfAtSymbol = remainingMsg.search("@")
             if (fakeIndexOfAtSymbol===-1) break; //@ not found
             trueIndexOfAtSymbol += fakeIndexOfAtSymbol
@@ -107,12 +110,16 @@ async function remind(params, message) {
         //find whom to send the reminder to
         let whomUsernamesArr = []
         //if there are mentions, just worry about those
-        if (message.mentions.length > 0) {
-            for (let user of message.mentions) {
+
+        if (message.mentions.users.size > 0) {
+            newRemind.whom = []
+            for (let [key, user] of message.mentions.users) {
+                console.log(user)
                 newRemind.whom.push(user.id)
                 whomUsernamesArr.push(user.username + "#" + user.discriminator)
             }
         } else if (recips) {
+            newRemind.whom = []
             let recipUsersArr = recips.split(", ")
             //for now only handle id or name#discriminator
             for (let user of recipUsersArr) {
@@ -120,7 +127,7 @@ async function remind(params, message) {
                     message.channel.send("Error: couldn't parse recipients")
                     return
                 }
-                let theUser = await findUser(str)
+                let theUser = await findUser(user.slice(1))
                 if (!theUser) {
                     message.channel.send(`Error: couldn't find user for recipient: "${user}"`)
                     return
@@ -130,10 +137,11 @@ async function remind(params, message) {
             }
         } else {
             whomStr = message.author.username + "#" + message.author.discriminator
-            newRemind.whom = [message.author.id]
+            //newRemind.whom initializes as just the author
         }
         console.log(newRemind)
         return
+        // eod 6/22/22 we forgot to set the message!
     } else if (remindTypeStr==="after" || remindTypeStr==="in") {
         return
         //use parseduration
@@ -252,6 +260,7 @@ function parseDuration(str) {
 }
 
 function strIsTimeOrDate(str) {
+    if (!str) return
     if (str.includes("/")) {
         let dateRegex = /[1-12]|0[1-9]\/[1-31]|0[1-9]\/20[22-99]|[22-99]/
         if (!dateRegex.test(str)) return
