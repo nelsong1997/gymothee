@@ -44,7 +44,7 @@ async function remind(params, message) {
         switch (strIsTimeOrDate(whenArr[1])) {
             case "date": 
                 if (dateStr!=="") {
-                    message.channel.send(`Error: Invalid date/time 1.`)
+                    message.channel.send(`Error: Invalid date/time.`)
                     return
                 } else {
                     dateStr = whenArr[1]
@@ -52,7 +52,7 @@ async function remind(params, message) {
                 break;
             case "time": 
                 if (timeStr!=="") {
-                    message.channel.send(`Error: Invalid date/time 2.`)
+                    message.channel.send(`Error: Invalid date/time.`)
                     return
                 } else {
                     timeStr = whenArr[1]
@@ -69,7 +69,6 @@ async function remind(params, message) {
         }
 
         //handle am/pm
-        console.log(timeStr)
         let endOfTimeStr = timeStr.slice(timeStr.length - 2, timeStr.length).toLowerCase()
         if (endOfTimeStr==="am") timeStr = timeStr.slice(0, timeStr.length - 2)
         else if (endOfTimeStr==="pm") {
@@ -82,8 +81,7 @@ async function remind(params, message) {
         //Make sure we have a real date
         newRemind.date = new Date(dateStr + " " + timeStr)
         if (!newRemind.date.getTime()) {
-            console.log(dateStr, timeStr)
-            message.channel.send("Error: Invalid date/time 3.")
+            message.channel.send("Error: Invalid date/time.")
             return
         }
 
@@ -94,18 +92,24 @@ async function remind(params, message) {
         let remainingMsg = msgAndRecips
         let msgNoRecips = msgAndRecips
         let recips = ""
-        while (trueIndexOfAtSymbol < msgAndRecips.length) {
-            fakeIndexOfAtSymbol = remainingMsg.search("@")
-            if (fakeIndexOfAtSymbol===-1) break; //@ not found
-            trueIndexOfAtSymbol += fakeIndexOfAtSymbol
-            remainingMsg = remainingMsg.slice(fakeIndexOfAtSymbol)
-            if (remainingMsg[1]!==" ") {
-                msgNoRecips = msgAndRecips.slice(0, trueIndexOfAtSymbol)
-                recips = msgAndRecips.slice(trueIndexOfAtSymbol)
-                break;
+        if (message.mentions.users.size > 0) {
+            trueIndexOfAtSymbol = msgAndRecips.search("<@")
+            msgNoRecips = msgAndRecips.slice(0, trueIndexOfAtSymbol)
+        } else {
+            while (trueIndexOfAtSymbol < msgAndRecips.length) {
+                fakeIndexOfAtSymbol = remainingMsg.search("@")
+                if (fakeIndexOfAtSymbol===-1) break; //@ not found
+                trueIndexOfAtSymbol += fakeIndexOfAtSymbol
+                remainingMsg = remainingMsg.slice(fakeIndexOfAtSymbol)
+                if (remainingMsg[1]!==" ") {
+                    msgNoRecips = msgAndRecips.slice(0, trueIndexOfAtSymbol)
+                    recips = msgAndRecips.slice(trueIndexOfAtSymbol)
+                    break;
+                }
+                remainingMsg = remainingMsg.slice(1)
             }
-            remainingMsg = remainingMsg.slice(1)
         }
+        newRemind.message = msgNoRecips.trim()
 
         //find whom to send the reminder to
         let whomUsernamesArr = []
@@ -114,10 +118,10 @@ async function remind(params, message) {
         if (message.mentions.users.size > 0) {
             newRemind.whom = []
             for (let [key, user] of message.mentions.users) {
-                console.log(user)
                 newRemind.whom.push(user.id)
                 whomUsernamesArr.push(user.username + "#" + user.discriminator)
             }
+            whomStr = whomUsernamesArr.join(", ")
         } else if (recips) {
             newRemind.whom = []
             let recipUsersArr = recips.split(", ")
@@ -135,13 +139,11 @@ async function remind(params, message) {
                 newRemind.whom.push(theUser.id)
                 whomUsernamesArr.push(theUser.username + "#" + theUser.discriminator)
             }
+            whomStr = whomUsernamesArr.join(", ")
         } else {
             whomStr = message.author.username + "#" + message.author.discriminator
             //newRemind.whom initializes as just the author
         }
-        console.log(newRemind)
-        return
-        // eod 6/22/22 we forgot to set the message!
     } else if (remindTypeStr==="after" || remindTypeStr==="in") {
         return
         //use parseduration
@@ -188,7 +190,7 @@ async function remind(params, message) {
                 userId,
                 `Reminder with id: ${remindId} was created by user: ` +
                 `${message.author.username}#${message.author.discriminator} ` +
-                `with message: "${newRemind.message}".`
+                `with message: "${newRemind.message}". ` +
                 `This reminder will fire on ` +
                 `${newRemind.date.toLocaleString('en-us')}` +
                 (newRemind.repeat ? `, repeating every ${newRemind.repeat.freqNum} ${newRemind.repeat.freqTimeUnit}` : ``) +
@@ -204,58 +206,95 @@ function parseDuration(str) {
     //30s, 3min, 1hr, 1d, 1w, 1m, 1yr
     //1:00:00
     let duration = {}
-    const timeUnits = [
-        "sec",
-        "min",
-        "hrs",
-        "day",
-        "mon",
-        "yrs"
-    ]
+    const timeUnits = {
+        //link possible time unit inputs to date funcs
+        "s": "Seconds",
+        "sec": "Seconds",
+        "second": "Seconds",
+        "min": "Minutes",
+        "minute": "Minutes",
+        "h": "Hours",
+        "hr": "Hours",
+        "hour": "Hours",
+        "d": "Date",
+        "day": "Date",
+        "mon": "Month",
+        "month": "Month",
+        "y": "FullYear",
+        "yr": "FullYear",
+        "year": "FullYear"
+    }
     if (str.includes(":")) {
         let timeArray = str.split(":").reverse()
+        if (timeArray.length > 6) {
+            return { 
+                error:
+                    `Error: Too many time units in duration. ` +
+                    `The smallest readable time unit is ` + 
+                    `seconds and the largest is years.`
+            }
+        }
         for (let i=0; i<timeArray.length; i++) {
             let durationNum = Number(timeArray[i])
-            if (i===6) {
-                return { 
-                    error:
-                        `Error: Too many time units in duration. ` +
-                        `The smallest readable time unit is ` + 
-                        `seconds and the largest is years.`
-                }
-            } else if (isNaN(durationNum)) {
+            if (isNaN(durationNum)) {
                 return {
                     error: 
                         `Error: Time specified for time unit ` +
                         `"${timeUnits[i]}" is not a number.`
                 }
+            } else if (durationNum < 0) {
+                return {
+                    error: 
+                        `Error: Time specified for time unit ` +
+                        `"${timeUnits[i]}" cannot be negative.`
+                }
+            } else if (durationNum%1 > 0) {
+                return {
+                    error: 
+                        `Error: Time specified for time unit ` +
+                        `"${timeUnits[i]}" must be an integer.`
+                }
             }
             duration[timeUnits[i]] = durationNum
         }
     } else {
-        let specs = str.split(",")
+        let specs = str.split(", ")
         for (let spec of specs) {
             let textPart = spec.replaceAll(/\d/g, '')
             let numStr = spec.replaceAll(/\D/g, '')
             let num = Number(numStr)
-            if (!timeUnits.includes(textPart)) {
-                return { error: `"${textPart}" is not a recognized time unit. Please use: ${timeUnits.join(", ")}` }
+            if (!timeUnits[`${textPart}`]) {
+                return { error: `"${textPart}" is not a recognized time unit.` }
             } else if (spec !== numStr + textPart) {
                 return { error: `specification for "${textPart}" is improperly formatted` }
             } else if (isNaN(num)) {
                 return { error: `${numStr} for unit "${textPart}" is not a number`}
+            } else if (num < 0) {
+                return {
+                    error: 
+                        `Error: Time specified for time unit ` +
+                        `"${textPart}" cannot be negative.`
+                }
+            } else if (num%1 > 0) {
+                return {
+                    error: 
+                        `Error: Time specified for time unit ` +
+                        `"${textPart}" must be an integer.`
+                }
+            } else if (duration[timeUnits[`${textPart}`]]) {
+                return {
+                    error: 
+                        `Error: Time specified for time unit ` +
+                        `"${textPart}" more than once.`
+                }
             }
-            duration[textPart] = num
+            duration[timeUnits[`${textPart}`]] = num
         }
     }
-    for (let unit of timeUnits) if (!duration[unit]) duration[unit] = 0
     let remind = new Date()
-    remind.setSeconds(remind.getSeconds() + duration.sec)
-    remind.setMinutes(remind.getMinutes() + duration.min)
-    remind.setHours(remind.getHours() + duration.hrs)
-    remind.setDate(remind.getDate() + duration.day)
-    remind.setMonth(remind.getMonth() + duration.mon)
-    remind.setFullYear(remind.getFullYear() + duration.yrs)
+    for (let timeUnit in duration) {
+        remind["set" + timeUnit](remind["get" + timeUnit] + duration[timeUnit])
+    } 
     return remind
 }
 
