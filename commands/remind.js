@@ -164,6 +164,9 @@ async function remind(params, message) {
         if (!result) return //errors should be sent from the func above
         newRemind = result.remind
         whomStr = result.changes.whom || message.author.username + "#" + message.author.discriminator
+    } else {
+        message.channel.send("Failed to parse your reminder command.")
+        return
     }
 
     let result = await createReminder(newRemind)
