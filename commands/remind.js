@@ -144,9 +144,20 @@ async function remind(params, message) {
             whomStr = message.author.username + "#" + message.author.discriminator
             //newRemind.whom initializes as just the author
         }
+
+    // ----------------- IN/AFTER ------------------ //
+
     } else if (remindTypeStr==="after" || remindTypeStr==="in") {
-        return
-        //use parseduration
+        let remindParamsStr = params.slice(1).join(" ")
+        newRemind.date = parseDuration(remindParamsStr)
+        if (newRemind.date.error) {
+            message.channel.send(newRemind.date.error)
+            return
+        } else if (!newRemind.date.getTime()) {
+            message.channel.send("Error: Invalid date/time.")
+            return
+        }
+        whomStr = message.author.username + "#" + message.author.discriminator
     } else if (remindTypeStr==="custom") {
         let keyValuePairs = params.slice(1).join(" ").split("; ")
         let result = await parseRemindParams(message, newRemind, keyValuePairs)
@@ -154,22 +165,6 @@ async function remind(params, message) {
         newRemind = result.remind
         whomStr = result.changes.whom || message.author.username + "#" + message.author.discriminator
     }
-
-    // if (params.length===1) {
-    //     //basic command / !remind 30s
-    //     //reminds after specified duration
-    //     let remindDate = parseDuration(params[0])
-    //     if (remindDate.error) {
-    //         message.channel.send(remindDate.error)
-    //         return
-    //     } else {
-    //         newRemind.date = remindDate
-    //         whomStr = message.author.username + "#" + message.author.discriminator
-    //     }
-    // } else {
-    //     message.channel.send("Failed to parse your reminder command.")
-    //     return
-    // }
 
     let result = await createReminder(newRemind)
     if (result && result.error) {
@@ -206,7 +201,7 @@ function parseDuration(str) {
     //30s, 3min, 1hr, 1d, 1w, 1m, 1yr
     //1:00:00
     let duration = {}
-    const timeUnits = {
+    const timeInputs = {
         //link possible time unit inputs to date funcs
         "s": "Seconds",
         "sec": "Seconds",
@@ -224,6 +219,15 @@ function parseDuration(str) {
         "yr": "FullYear",
         "year": "FullYear"
     }
+    const timeUnits = [
+        "Seconds",
+        "Minutes",
+        "Hours",
+        "Date",
+        "Month",
+        "FullYear"
+    ]
+
     if (str.includes(":")) {
         let timeArray = str.split(":").reverse()
         if (timeArray.length > 6) {
@@ -258,15 +262,19 @@ function parseDuration(str) {
             duration[timeUnits[i]] = durationNum
         }
     } else {
-        let specs = str.split(", ")
+        let specs = str.toLowerCase().split(", ")
         for (let spec of specs) {
-            let textPart = spec.replaceAll(/\d/g, '')
+            let textPart = spec.replaceAll(/\d| /g, '')
             let numStr = spec.replaceAll(/\D/g, '')
             let num = Number(numStr)
-            if (!timeUnits[`${textPart}`]) {
+            if ( //handle plurals; "secs" "mins" etc are valid
+                textPart.slice(textPart.length - 1) === "s" &&
+                timeInputs[`${textPart.slice(0, textPart.length - 1)}`]
+            ) {
+                textPart = textPart.slice(0, textPart.length - 1)
+            }
+            if (!timeInputs[`${textPart}`]) {
                 return { error: `"${textPart}" is not a recognized time unit.` }
-            } else if (spec !== numStr + textPart) {
-                return { error: `specification for "${textPart}" is improperly formatted` }
             } else if (isNaN(num)) {
                 return { error: `${numStr} for unit "${textPart}" is not a number`}
             } else if (num < 0) {
@@ -281,21 +289,22 @@ function parseDuration(str) {
                         `Error: Time specified for time unit ` +
                         `"${textPart}" must be an integer.`
                 }
-            } else if (duration[timeUnits[`${textPart}`]]) {
+            } else if (duration[timeInputs[`${textPart}`]]) {
                 return {
                     error: 
                         `Error: Time specified for time unit ` +
                         `"${textPart}" more than once.`
                 }
             }
-            duration[timeUnits[`${textPart}`]] = num
+            duration[timeInputs[`${textPart}`]] = num
         }
     }
-    let remind = new Date()
+    let reminderDate = new Date()
     for (let timeUnit in duration) {
-        remind["set" + timeUnit](remind["get" + timeUnit] + duration[timeUnit])
-    } 
-    return remind
+        //ex timeUnit = Seconds => date.setSeconds(date.getSeconds() + duration.Seconds)
+        reminderDate["set" + timeUnit](reminderDate["get" + timeUnit]() + duration[timeUnit])
+    }
+    return reminderDate
 }
 
 function strIsTimeOrDate(str) {
