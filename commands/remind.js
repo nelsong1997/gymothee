@@ -26,138 +26,36 @@ async function remind(params, message) {
 
     let whomStr = ""
     let remindTypeStr = params[0].toLowerCase()
-    let dateSpecParams = 2 // how many params are used to specify date/time
+
     if (remindTypeStr==="on" || remindTypeStr==="at") {
         let whenArr = params.slice(1,3)
-        let dateStr = ""
-        let timeStr = ""
-        switch (strIsTimeOrDate(whenArr[0])) {
-            case "date":
-                dateStr = whenArr[0]
-                break;
-            case "time": timeStr = whenArr[0]
-                break;
-            case undefined: 
-                message.channel.send(`Error: ${whenArr[0]} is not a valid date or time.`)
-                return
-        }
-        switch (strIsTimeOrDate(whenArr[1])) {
-            case "date": 
-                if (dateStr!=="") {
-                    message.channel.send(`Error: Invalid date/time.`)
-                    return
-                } else {
-                    dateStr = whenArr[1]
-                }
-                break;
-            case "time": 
-                if (timeStr!=="") {
-                    message.channel.send(`Error: Invalid date/time.`)
-                    return
-                } else {
-                    timeStr = whenArr[1]
-                }
-                break;
-            case undefined:
-                dateSpecParams = 1
-                let rightNow = new Date()
-                if (dateStr==="") { //assume it's today
-                    dateStr = `${rightNow.getMonth() + 1}/${rightNow.getDate()}/${rightNow.getFullYear()}`
-                } else { //assume midnight on date specified
-                    timeStr = "00:00"
-                }
-        }
 
-        //handle am/pm
-        let endOfTimeStr = timeStr.slice(timeStr.length - 2, timeStr.length).toLowerCase()
-        if (endOfTimeStr==="am") timeStr = timeStr.slice(0, timeStr.length - 2)
-        else if (endOfTimeStr==="pm") {
-            let timeStrArr = timeStr.split(":")
-            let hours = Number(timeStrArr[0]) + 12
-            timeStr = hours + ":" + timeStrArr.slice(1).join(":")
-            timeStr = timeStr.slice(0, timeStr.length - 2)
-        }
-
-        //Make sure we have a real date
-        newRemind.date = new Date(dateStr + " " + timeStr)
-        if (!newRemind.date.getTime()) {
-            message.channel.send("Error: Invalid date/time.")
+        let result = parseDate(whenArr)
+        if (result.error) {
+            message.channel.send(result.error)
             return
         }
+        newRemind.date = result.date
+        //str that contains message and mentions
+        let remainderStr = params.slice(result.dateSpecParams + 1).join(" ")
 
-        //need to find where mentions/pseudo mentions are, if they exist
-        let msgAndRecips = params.slice(dateSpecParams + 1).join(" ")
-        let trueIndexOfAtSymbol = 0 //index within msgAndRecips
-        let fakeIndexOfAtSymbol = 0 //index within remainingMsg
-        let remainingMsg = msgAndRecips
-        let msgNoRecips = msgAndRecips
-        let recips = ""
-        if (message.mentions.users.size > 0) {
-            trueIndexOfAtSymbol = msgAndRecips.search("<@")
-            msgNoRecips = msgAndRecips.slice(0, trueIndexOfAtSymbol)
-        } else {
-            while (trueIndexOfAtSymbol < msgAndRecips.length) {
-                fakeIndexOfAtSymbol = remainingMsg.search("@")
-                if (fakeIndexOfAtSymbol===-1) break; //@ not found
-                trueIndexOfAtSymbol += fakeIndexOfAtSymbol
-                remainingMsg = remainingMsg.slice(fakeIndexOfAtSymbol)
-                if (remainingMsg[1]!==" ") {
-                    msgNoRecips = msgAndRecips.slice(0, trueIndexOfAtSymbol)
-                    recips = msgAndRecips.slice(trueIndexOfAtSymbol)
-                    break;
-                }
-                remainingMsg = remainingMsg.slice(1)
-            }
-        }
-        newRemind.message = msgNoRecips.trim()
-
-        //find whom to send the reminder to
-        let whomUsernamesArr = []
-        //if there are mentions, just worry about those
-
-        if (message.mentions.users.size > 0) {
-            newRemind.whom = []
-            for (let [key, user] of message.mentions.users) {
-                newRemind.whom.push(user.id)
-                whomUsernamesArr.push(user.username + "#" + user.discriminator)
-            }
-            whomStr = whomUsernamesArr.join(", ")
-        } else if (recips) {
-            newRemind.whom = []
-            let recipUsersArr = recips.split(", ")
-            //for now only handle id or name#discriminator
-            for (let user of recipUsersArr) {
-                if (!user.startsWith("@")) {
-                    message.channel.send("Error: couldn't parse recipients")
-                    return
-                }
-                let theUser = await findUser(user.slice(1))
-                if (!theUser) {
-                    message.channel.send(`Error: couldn't find user for recipient: "${user}"`)
-                    return
-                }
-                newRemind.whom.push(theUser.id)
-                whomUsernamesArr.push(theUser.username + "#" + theUser.discriminator)
-            }
-            whomStr = whomUsernamesArr.join(", ")
-        } else {
-            whomStr = message.author.username + "#" + message.author.discriminator
-            //newRemind.whom initializes as just the author
-        }
-
-    // ----------------- IN/AFTER ------------------ //
-
+        let result2 = parseMsgAndRecips(remainderStr, message)
+        newRemind.message = result2.message
+        newRemind.whom = result2.whom
+        whomStr = result2.whomStr
     } else if (remindTypeStr==="after" || remindTypeStr==="in") {
         let remindParamsStr = params.slice(1).join(" ")
-        newRemind.date = parseDuration(remindParamsStr)
-        if (newRemind.date.error) {
-            message.channel.send(newRemind.date.error)
-            return
-        } else if (!newRemind.date.getTime()) {
-            message.channel.send("Error: Invalid date/time.")
+        let result = parseDuration(remindParamsStr)
+        if (result.error) {
+            message.channel.send(result.error)
             return
         }
-        whomStr = message.author.username + "#" + message.author.discriminator
+        newRemind.date = result.date
+
+        let result2 = parseMsgAndRecips(result.remainderStr, message)
+        whomStr = result2.whomStr
+        newRemind.message = result2.message
+        newRemind.whom = result2.whom
     } else if (remindTypeStr==="custom") {
         let keyValuePairs = params.slice(1).join(" ").split("; ")
         let result = await parseRemindParams(message, newRemind, keyValuePairs)
@@ -169,7 +67,14 @@ async function remind(params, message) {
         return
     }
 
+    //date validation
+    if (!newRemind.date.getTime()) {
+        message.channel.send("Error: Invalid date/time.")
+        return
+    }
+
     let result = await createReminder(newRemind)
+
     if (result && result.error) {
         message.channel.send(result.error)
         return
@@ -200,10 +105,66 @@ async function remind(params, message) {
     }
 }
 
+function parseDate(arr) {
+    let dateStr = ""
+    let timeStr = ""
+    let dateSpecParams = 2 // how many params are used to specify date/time
+    switch (strIsTimeOrDate(arr[0])) {
+        case "date":
+            dateStr = arr[0]
+            break;
+        case "time": timeStr = arr[0]
+            break;
+        case undefined: 
+            return { error: `Error: ${arr[0]} is not a valid date or time.`}
+    }
+    switch (strIsTimeOrDate(arr[1])) {
+        case "date": 
+            if (dateStr!=="") {
+                return { error: `Error: Invalid date/time.`}
+            } else {
+                dateStr = arr[1]
+            }
+            break;
+        case "time": 
+            if (timeStr!=="") {
+                return { error: `Error: Invalid date/time.`}
+            } else {
+                timeStr = arr[1]
+            }
+            break;
+        case undefined:
+            dateSpecParams = 1
+            let rightNow = new Date()
+            if (dateStr==="") { //assume it's today
+                dateStr = `${rightNow.getMonth() + 1}/${rightNow.getDate()}/${rightNow.getFullYear()}`
+            } else { //assume midnight on date specified
+                timeStr = "00:00"
+            }
+    }
+
+    //handle am/pm
+    let endOfTimeStr = timeStr.slice(timeStr.length - 2, timeStr.length).toLowerCase()
+    if (endOfTimeStr==="am") timeStr = timeStr.slice(0, timeStr.length - 2)
+    else if (endOfTimeStr==="pm") {
+        let timeStrArr = timeStr.split(":")
+        let hours = Number(timeStrArr[0]) + 12
+        timeStr = hours + ":" + timeStrArr.slice(1).join(":")
+        timeStr = timeStr.slice(0, timeStr.length - 2)
+    }
+    msgAndRecips = params.slice(dateSpecParams + 1).join(" ")
+
+    return {
+        date: new Date(`${dateStr} ${timeStr}`),
+        dateSpecParams: dateSpecParams
+    }
+}
+
 function parseDuration(str) {
     //30s, 3min, 1hr, 1d, 1w, 1m, 1yr
     //1:00:00
     let duration = {}
+    let remainderStr = ""
     const timeInputs = {
         //link possible time unit inputs to date funcs
         "s": "Seconds",
@@ -232,7 +193,11 @@ function parseDuration(str) {
     ]
 
     if (str.includes(":")) {
-        let timeArray = str.split(":").reverse()
+        //2:45:32 message....
+        let spaceIndex = str.search(" ")
+        let durationStr = str.slice(0, spaceIndex)
+        remainderStr = str.slice(spaceIndex + 1, str.length)
+        let timeArray = durationStr.split(":").reverse()
         if (timeArray.length > 6) {
             return { 
                 error:
@@ -266,7 +231,8 @@ function parseDuration(str) {
         }
     } else {
         let specs = str.toLowerCase().split(", ")
-        for (let spec of specs) {
+        for (let i=0; i<specs.length; i++) {
+            let spec = specs[i]
             let textPart = spec.replaceAll(/\d| /g, '')
             let numStr = spec.replaceAll(/\D/g, '')
             let num = Number(numStr)
@@ -276,28 +242,30 @@ function parseDuration(str) {
             ) {
                 textPart = textPart.slice(0, textPart.length - 1)
             }
-            if (!timeInputs[`${textPart}`]) {
-                return { error: `"${textPart}" is not a recognized time unit.` }
+            let theError = null
+            if (spec !== numStr + textPart && spec !== numStr + " " + textPart) {
+                //weed out weird formats like the text coming first
+                //or text and numbers interspersed
+                theError = `Error: Specification "${spec}" is improperly formatted`
+            } else if (!timeInputs[`${textPart}`]) {
+                theError = `"${textPart}" is not a recognized time unit.`
             } else if (isNaN(num)) {
-                return { error: `${numStr} for unit "${textPart}" is not a number`}
+                theError = `${numStr} for unit "${textPart}" is not a number`
             } else if (num < 0) {
-                return {
-                    error: 
-                        `Error: Time specified for time unit ` +
-                        `"${textPart}" cannot be negative.`
-                }
+                theError = `Error: Time specified for time unit "${textPart}" cannot be negative.`
             } else if (num%1 > 0) {
-                return {
-                    error: 
-                        `Error: Time specified for time unit ` +
-                        `"${textPart}" must be an integer.`
-                }
+                theError = `Error: Time specified for time unit "${textPart}" must be an integer.`
             } else if (duration[timeInputs[`${textPart}`]]) {
-                return {
-                    error: 
-                        `Error: Time specified for time unit ` +
-                        `"${textPart}" more than once.`
-                }
+                theError = `Error: Time specified for time unit "${textPart}" more than once.`
+            }
+            if (theError && i===0) {
+                return { error: theError }
+            } else if (theError) {
+                //if the error occurs past the first one, we'll give them the benefit of the doubt
+                //and just assume they meant it as part of their message and not the dur spec
+                remainderStr = specs.slice(i).join(", ")
+                break;
+                //could alternatively not allow commas or force the message to be in quotes
             }
             duration[timeInputs[`${textPart}`]] = num
         }
@@ -307,7 +275,78 @@ function parseDuration(str) {
         //ex timeUnit = Seconds => date.setSeconds(date.getSeconds() + duration.Seconds)
         reminderDate["set" + timeUnit](reminderDate["get" + timeUnit]() + duration[timeUnit])
     }
-    return reminderDate
+    return { 
+        date: reminderDate,
+        remainderStr: remainderStr
+    }
+}
+
+function parseMsgAndRecips(str, message) {
+    //need to find where mentions/pseudo mentions are, if they exist
+    let trueIndexOfAtSymbol = 0 //index within str
+    let fakeIndexOfAtSymbol = 0 //index within remainingMsg
+    let remainingMsg = str
+    let msgNoRecips = str
+    let recips = ""
+    let whomStr = ""
+
+    if (message.mentions.users.size > 0) {
+        msgNoRecips = str.slice(0, str.search("<@"))
+    } else {
+        while (trueIndexOfAtSymbol < str.length) {
+            fakeIndexOfAtSymbol = remainingMsg.search("@")
+            if (fakeIndexOfAtSymbol===-1) break; //@ not found
+            trueIndexOfAtSymbol += fakeIndexOfAtSymbol
+            remainingMsg = remainingMsg.slice(fakeIndexOfAtSymbol)
+            if (remainingMsg[1]!==" ") {
+                msgNoRecips = str.slice(0, trueIndexOfAtSymbol)
+                recips = str.slice(trueIndexOfAtSymbol)
+                break;
+            }
+            remainingMsg = remainingMsg.slice(1)
+        }
+    }
+
+    //find whom to send the reminder to
+    let whomUsernamesArr = []
+    let whomUserIds = []
+    //if there are mentions, just worry about those
+
+    if (message.mentions.users.size > 0) {
+        whomUserIds = []
+        for (let [key, user] of message.mentions.users) {
+            whomUserIds.push(user.id)
+            whomUsernamesArr.push(user.username + "#" + user.discriminator)
+        }
+        whomStr = whomUsernamesArr.join(", ")
+    } else if (recips) {
+        whomUserIds = []
+        let recipUsersArr = recips.split(", ")
+        //for now only handle id or name#discriminator
+        for (let user of recipUsersArr) {
+            if (!user.startsWith("@")) {
+                message.channel.send("Error: couldn't parse recipients")
+                return
+            }
+            let theUser = await findUser(user.slice(1))
+            if (!theUser) {
+                message.channel.send(`Error: couldn't find user for recipient: "${user}"`)
+                return
+            }
+            whomUserIds.push(theUser.id)
+            whomUsernamesArr.push(theUser.username + "#" + theUser.discriminator)
+        }
+        whomStr = whomUsernamesArr.join(", ")
+    } else {
+        whomStr = message.author.username + "#" + message.author.discriminator
+        //newRemind.whom initializes as just the author
+    }
+
+    return {
+        message: msgNoRecips.trim(),
+        whomStr: whomStr,
+        whom: whomUserIds
+    }
 }
 
 function strIsTimeOrDate(str) {
@@ -327,3 +366,9 @@ function strIsTimeOrDate(str) {
 }
 
 module.exports = remind
+
+//eod 7/2/22
+//still need to decide logic for pulling msg and recips out of duration specs by comma
+//probably want to look for first item that fails to find a time unit; or should we disallow commas
+//and simply pull from after the last spec
+//..., <num><timeUnit> <message> or ..., <num> <timeUnit> <message>
