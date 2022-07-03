@@ -39,7 +39,7 @@ async function remind(params, message) {
         //str that contains message and mentions
         let remainderStr = params.slice(result.dateSpecParams + 1).join(" ")
 
-        let result2 = parseMsgAndRecips(remainderStr, message)
+        let result2 = await parseMsgAndRecips(remainderStr, message)
         newRemind.message = result2.message
         newRemind.whom = result2.whom
         whomStr = result2.whomStr
@@ -52,7 +52,7 @@ async function remind(params, message) {
         }
         newRemind.date = result.date
 
-        let result2 = parseMsgAndRecips(result.remainderStr, message)
+        let result2 = await parseMsgAndRecips(result.remainderStr, message)
         whomStr = result2.whomStr
         newRemind.message = result2.message
         newRemind.whom = result2.whom
@@ -261,6 +261,10 @@ function parseDuration(str) {
             if (theError && i===0) {
                 return { error: theError }
             } else if (theError) {
+                //need to fix this logic
+                //still need to pull the spec from the last entry
+                //and separate it from the msg
+
                 //if the error occurs past the first one, we'll give them the benefit of the doubt
                 //and just assume they meant it as part of their message and not the dur spec
                 remainderStr = specs.slice(i).join(", ")
@@ -281,7 +285,7 @@ function parseDuration(str) {
     }
 }
 
-function parseMsgAndRecips(str, message) {
+async function parseMsgAndRecips(str, message) {
     //need to find where mentions/pseudo mentions are, if they exist
     let trueIndexOfAtSymbol = 0 //index within str
     let fakeIndexOfAtSymbol = 0 //index within remainingMsg
@@ -309,7 +313,7 @@ function parseMsgAndRecips(str, message) {
 
     //find whom to send the reminder to
     let whomUsernamesArr = []
-    let whomUserIds = []
+    let whomUserIds = [message.author.id]
     //if there are mentions, just worry about those
 
     if (message.mentions.users.size > 0) {
@@ -367,8 +371,6 @@ function strIsTimeOrDate(str) {
 
 module.exports = remind
 
-//eod 7/2/22
-//still need to decide logic for pulling msg and recips out of duration specs by comma
-//probably want to look for first item that fails to find a time unit; or should we disallow commas
-//and simply pull from after the last spec
-//..., <num><timeUnit> <message> or ..., <num> <timeUnit> <message>
+//real eod 7/2/22
+//people probably shouldn't get msgs for reminders that only fire once
+//fix logic marked above
