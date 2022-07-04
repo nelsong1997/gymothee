@@ -152,7 +152,6 @@ function parseDate(arr) {
         timeStr = hours + ":" + timeStrArr.slice(1).join(":")
         timeStr = timeStr.slice(0, timeStr.length - 2)
     }
-    msgAndRecips = params.slice(dateSpecParams + 1).join(" ")
 
     return {
         date: new Date(`${dateStr} ${timeStr}`),
@@ -193,7 +192,7 @@ function parseDuration(str) {
     ]
 
     if (str.includes(":")) {
-        //2:45:32 message....
+        //2:45:32 message @joey#1234
         let spaceIndex = str.search(" ")
         let durationStr = str.slice(0, spaceIndex)
         remainderStr = str.slice(spaceIndex + 1, str.length)
@@ -230,55 +229,70 @@ function parseDuration(str) {
             duration[timeUnits[i]] = durationNum
         }
     } else {
+        //1min, 30sec message @joey#1234
         let specs = str.toLowerCase().split(", ")
         for (let i=0; i<specs.length; i++) {
             let spec = specs[i]
-            let textPart = spec.replaceAll(/\d| /g, '')
-            let numStr = spec.replaceAll(/\D/g, '')
-            let num = Number(numStr)
-            if ( //handle plurals; "secs" "mins" etc are valid
-                textPart.slice(textPart.length - 1) === "s" &&
-                timeInputs[`${textPart.slice(0, textPart.length - 1)}`]
-            ) {
-                textPart = textPart.slice(0, textPart.length - 1)
+            let wordsArr = spec.split(" ")
+            //1min
+            let specResult1 = testDurationSpec(wordsArr[0])
+            let specResult2;
+            if (specResult1.error) {
+                //1 min
+                specResult2 = testDurationSpec(wordsArr[0] + wordsArr[1])
+                //could throw both errors?
+                if (specResult2.error) return { error: specResult1.error }
+                else {
+                    remainderStr = wordsArr.slice(2).join(" ")
+                    duration[specResult2.timeUnit] = specResult2.durNum
+                }
+            } else {
+                remainderStr = wordsArr.slice(1).join(" ")
+                duration[specResult1.timeUnit] = specResult1.durNum
             }
-            let theError = null
-            if (spec !== numStr + textPart && spec !== numStr + " " + textPart) {
-                //weed out weird formats like the text coming first
-                //or text and numbers interspersed
-                theError = `Error: Specification "${spec}" is improperly formatted`
-            } else if (!timeInputs[`${textPart}`]) {
-                theError = `"${textPart}" is not a recognized time unit.`
-            } else if (isNaN(num)) {
-                theError = `${numStr} for unit "${textPart}" is not a number`
-            } else if (num < 0) {
-                theError = `Error: Time specified for time unit "${textPart}" cannot be negative.`
-            } else if (num%1 > 0) {
-                theError = `Error: Time specified for time unit "${textPart}" must be an integer.`
-            } else if (duration[timeInputs[`${textPart}`]]) {
-                theError = `Error: Time specified for time unit "${textPart}" more than once.`
-            }
-            if (theError && i===0) {
-                return { error: theError }
-            } else if (theError) {
-                //need to fix this logic
-                //still need to pull the spec from the last entry
-                //and separate it from the msg
 
-                //if the error occurs past the first one, we'll give them the benefit of the doubt
-                //and just assume they meant it as part of their message and not the dur spec
-                remainderStr = specs.slice(i).join(", ")
-                break;
-                //could alternatively not allow commas or force the message to be in quotes
+            function testDurationSpec(specStr) {
+                //test the spec str to see if it is a duration spec or not
+                let textPart = specStr.replaceAll(/\d| /g, '')
+                let numStr = specStr.replaceAll(/\D/g, '')
+                let num = Number(numStr)
+
+                if (specStr !== numStr + textPart) {
+                    //weed out weird formats like the text coming first
+                    //or text and numbers interspersed
+                    return { error: `Error: Specification "${specStr}" is improperly formatted` }
+                }
+
+                if ( //handle plurals; "secs" "mins" etc are valid
+                    textPart.slice(textPart.length - 1) === "s" &&
+                    timeInputs[`${textPart.slice(0, textPart.length - 1)}`]
+                ) {
+                    textPart = textPart.slice(0, textPart.length - 1)
+                }
+                
+                if (!timeInputs[`${textPart}`]) {
+                    return { error: `"${textPart}" is not a recognized time unit.` }
+                } else if (isNaN(num)) {
+                    return { error: `${numStr} for unit "${textPart}" is not a number`} 
+                } else if (num < 0) {
+                    return { error: `Error: Time specified for time unit "${textPart}" cannot be negative.` }
+                } else if (num%1 > 0) {
+                    return { error: `Error: Time specified for time unit "${textPart}" must be an integer.` }
+                } else if (duration[timeInputs[`${textPart}`]]) {
+                    return { error: `Error: Time specified for time unit "${textPart}" more than once.` }
+                }
+                return { timeUnit: timeInputs[`${textPart}`], durNum: num }
             }
-            duration[timeInputs[`${textPart}`]] = num
         }
     }
+
     let reminderDate = new Date()
+
     for (let timeUnit in duration) {
         //ex timeUnit = Seconds => date.setSeconds(date.getSeconds() + duration.Seconds)
         reminderDate["set" + timeUnit](reminderDate["get" + timeUnit]() + duration[timeUnit])
     }
+
     return { 
         date: reminderDate,
         remainderStr: remainderStr
@@ -347,7 +361,7 @@ async function parseMsgAndRecips(str, message) {
     }
 
     return {
-        message: msgNoRecips.trim(),
+        message: msgNoRecips.trim() || "Reminder!",
         whomStr: whomStr,
         whom: whomUserIds
     }
