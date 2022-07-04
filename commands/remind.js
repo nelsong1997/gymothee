@@ -109,6 +109,7 @@ function parseDate(arr) {
     let dateStr = ""
     let timeStr = ""
     let dateSpecParams = 2 // how many params are used to specify date/time
+    console.log(strIsTimeOrDate(arr[0]))
     switch (strIsTimeOrDate(arr[0])) {
         case "date":
             dateStr = arr[0]
@@ -374,8 +375,8 @@ function strIsTimeOrDate(str) {
         if (!dateRegex.test(str)) return
         return "date"
     } else if (str.includes(":")) {
-        let timeRegex = /0[1-9]|0-23:0[1-9]|[10-59]$|:0[1-9]|:[10-59]$|(( |$)(am|pm))/i
-        if (timeRegex.test(str)) return
+        let timeRegex = /([0-9]|0[1-9]|1[0-9]|2[0-3]):[0-5][0-9](am|pm)/i
+        if (!timeRegex.test(str)) return
         let hours = Number(str.split(":")[0])
         let endOfTimeStr = str.slice(str.length - 2, str.length).toLowerCase()
         if (hours > 12 && (endOfTimeStr==="am" || endOfTimeStr==="pm")) return
@@ -385,6 +386,7 @@ function strIsTimeOrDate(str) {
 
 module.exports = remind
 
-//real eod 7/2/22
+//eod 7/2/22
 //people probably shouldn't get msgs for reminders that only fire once
-//fix logic marked above
+//if it's 3:03pm and you enter 7:03 it should assume pm
+//need to expand time regex to work with seconds and space for am/pm
