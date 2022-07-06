@@ -7,12 +7,12 @@ async function createReminder(remind) {
     let remindDate = remind.date
     let nextMidnight = new Date()
     nextMidnight.setDate(nextMidnight.getDate() + 1)
-    nextMidnight.setHours(0, 0, 0, 0) //151 #1
+    nextMidnight.setHours(0, 0, 0, 0)
     let now = new Date()
     let tillRemind = remindDate - now
 
     if (tillRemind < 0) {
-        return { error: "Error: the end time for this reminder is in the past" }
+        return { error: "Error: The end time for this reminder is in the past" }
     } else if (nextMidnight - remindDate > 0) {
         // console.log(`did immediately create timeout for dif==${tillRemind} ${new Date().toTimeString()}`)
         setTimeout(() => sendReminder(remind.id, remindDate), tillRemind)

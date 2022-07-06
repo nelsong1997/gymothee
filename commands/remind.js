@@ -87,29 +87,32 @@ async function remind(params, message) {
             `. User(s): ${whomStr} ` +
             `will be notified via ${newRemind.deliver==="dm" ? "DM" : "this text channel"}.`
         )
-        for (let userId of newRemind.whom) {
-            if (userId===message.author.id) continue;
-            sendDm(
-                userId,
-                `Reminder with id: ${remindId} was created by user: ` +
-                `${message.author.username}#${message.author.discriminator} ` +
-                `with message: "${newRemind.message}". ` +
-                `This reminder will fire on ` +
-                `${newRemind.date.toLocaleString('en-us')}` +
-                (newRemind.repeat ? `, repeating every ${newRemind.repeat.freqNum} ${newRemind.repeat.freqTimeUnit}` : ``) +
-                ((newRemind.repeat && newRemind.repeat.freqNum > 1) ? "s" : "") +
-                `. User(s): ${whomStr} ` +
-                `will be notified via ${newRemind.deliver==="dm" ? "DM" : "this text channel"}.`
-            )
+        if (newRemind.repeat) { //probably bad practice to pre-notify someone for a reminder they'll receive once
+            for (let userId of newRemind.whom) {
+                if (userId===message.author.id) continue;
+                sendDm(
+                    userId,
+                    `Reminder with id: ${remindId} was created by user: ` +
+                    `${message.author.username}#${message.author.discriminator} ` +
+                    `with message: "${newRemind.message}". ` +
+                    `This reminder will fire on ` +
+                    `${newRemind.date.toLocaleString('en-us')}` +
+                    (newRemind.repeat ? `, repeating every ${newRemind.repeat.freqNum} ${newRemind.repeat.freqTimeUnit}` : ``) +
+                    ((newRemind.repeat && newRemind.repeat.freqNum > 1) ? "s" : "") +
+                    `. User(s): ${whomStr} ` +
+                    `will be notified via ${newRemind.deliver==="dm" ? "DM" : "this text channel"}.`
+                )
+            }
         }
+        
     }
 }
 
 function parseDate(arr) {
     let dateStr = ""
     let timeStr = ""
+    let rightNow = new Date()
     let dateSpecParams = 2 // how many params are used to specify date/time
-    console.log(strIsTimeOrDate(arr[0]))
     switch (strIsTimeOrDate(arr[0])) {
         case "date":
             dateStr = arr[0]
@@ -136,7 +139,6 @@ function parseDate(arr) {
             break;
         case undefined:
             dateSpecParams = 1
-            let rightNow = new Date()
             if (dateStr==="") { //assume it's today
                 dateStr = `${rightNow.getMonth() + 1}/${rightNow.getDate()}/${rightNow.getFullYear()}`
             } else { //assume midnight on date specified
@@ -146,6 +148,8 @@ function parseDate(arr) {
 
     //handle am/pm
     let endOfTimeStr = timeStr.slice(timeStr.length - 2, timeStr.length).toLowerCase()
+    
+    
     if (endOfTimeStr==="am") timeStr = timeStr.slice(0, timeStr.length - 2)
     else if (endOfTimeStr==="pm") {
         let timeStrArr = timeStr.split(":")
@@ -153,9 +157,21 @@ function parseDate(arr) {
         timeStr = hours + ":" + timeStrArr.slice(1).join(":")
         timeStr = timeStr.slice(0, timeStr.length - 2)
     }
+    
+    let finalDate = new Date(`${dateStr} ${timeStr}`)
+    let timeStrHours = Number(timeStr.split(":")[0])
+    if (rightNow > finalDate && timeStrHours < 12) {
+        //no am/pm specified but finalDate is in the past
+        //we assumed am but should be pm
+        finalDate.setHours(finalDate.getHours() + 12)
+        if (rightNow > finalDate) {
+            //revert if it didn't fix the problem
+            finalDate.setHours(finalDate.getHours() - 12)
+        }
+    }
 
     return {
-        date: new Date(`${dateStr} ${timeStr}`),
+        date: finalDate,
         dateSpecParams: dateSpecParams
     }
 }
@@ -371,11 +387,11 @@ async function parseMsgAndRecips(str, message) {
 function strIsTimeOrDate(str) {
     if (!str) return
     if (str.includes("/")) {
-        let dateRegex = /[1-12]|0[1-9]\/[1-31]|0[1-9]\/20[22-99]|[22-99]/
+        let dateRegex = /^[1-12]|0[1-9]\/[1-31]|0[1-9]\/20[22-99]|[22-99]$/
         if (!dateRegex.test(str)) return
         return "date"
     } else if (str.includes(":")) {
-        let timeRegex = /([0-9]|0[1-9]|1[0-9]|2[0-3]):[0-5][0-9](am|pm)/i
+        let timeRegex = /^([0-9]|0[1-9]|1[0-9]|2[0-3]):[0-5][0-9](|:[0-5][0-9])(am|pm|$)$/i
         if (!timeRegex.test(str)) return
         let hours = Number(str.split(":")[0])
         let endOfTimeStr = str.slice(str.length - 2, str.length).toLowerCase()
@@ -386,7 +402,6 @@ function strIsTimeOrDate(str) {
 
 module.exports = remind
 
-//eod 7/2/22
-//people probably shouldn't get msgs for reminders that only fire once
-//if it's 3:03pm and you enter 7:03 it should assume pm
-//need to expand time regex to work with seconds and space for am/pm
+// 7/5/22
+//maybe would like to remind at 11am
+//maybe should send the reminder id as its own message for easy copying on mobile

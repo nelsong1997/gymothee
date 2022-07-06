@@ -58,18 +58,21 @@ async function editRemind(params, message) {
             }
             sendThis = sendThis.slice(0, sendThis.length - 2)
             message.channel.send("Reminder edited. " + sendThis)
-            for (let userId of reminds[index].whom) {
-                if (userId===message.author.id) continue;
-                if (!oldWhom.includes(userId)) {
-                    sendDm(
-                        userId,
-                        `You were added to a reminder with id ${theRemind.id}. ` +
-                        `Use "viewremind" command to view details.`
-                    )
-                } else {
-                    sendDm(userId, `Reminder with id ${theRemind.id} was edited. ` + sendThis)
+            if (reminds[index].repeat) { //probably bad practice to pre-notify someone for a reminder they'll receive once
+                for (let userId of reminds[index].whom) {
+                    if (userId===message.author.id) continue;
+                    if (!oldWhom.includes(userId)) {
+                        sendDm(
+                            userId,
+                            `You were added to a reminder with id ${theRemind.id}. ` +
+                            `Use "viewremind" command to view details.`
+                        )
+                    } else {
+                        sendDm(userId, `Reminder with id ${theRemind.id} was edited. ` + sendThis)
+                    }
                 }
             }
+            
         }
     } else {
         message.channel.send(
