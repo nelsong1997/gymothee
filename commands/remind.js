@@ -149,14 +149,14 @@ function parseDate(arr) {
     //handle am/pm
     let endOfTimeStr = timeStr.slice(timeStr.length - 2, timeStr.length).toLowerCase()
     
-    
-    if (endOfTimeStr==="am") timeStr = timeStr.slice(0, timeStr.length - 2)
+    let timeStrArr = timeStr.split(":")
+    let hours = Number(timeStrArr[0])
+    if (endOfTimeStr==="am" && hours===12) timeStr = "00:" + timeStrArr.slice(1).join(":")
     else if (endOfTimeStr==="pm") {
-        let timeStrArr = timeStr.split(":")
-        let hours = Number(timeStrArr[0]) + 12
+        if (hours!==12) hours += 12
         timeStr = hours + ":" + timeStrArr.slice(1).join(":")
-        timeStr = timeStr.slice(0, timeStr.length - 2)
     }
+    if (endOfTimeStr==="am" || endOfTimeStr==="pm") timeStr = timeStr.slice(0, timeStr.length - 2)
     
     let finalDate = new Date(`${dateStr} ${timeStr}`)
     let timeStrHours = Number(timeStr.split(":")[0])
