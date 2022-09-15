@@ -27,3 +27,7 @@ async function post(what, object, guildId) {
 }
 
 module.exports = post
+
+//9/14/22
+//post function needs busy flag/state. could theoretically double post/overwrite other update
+//could also try out simply importing json directly instead of using server (not sure if possible)

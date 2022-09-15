@@ -262,10 +262,34 @@ function parseDuration(str) {
                 else {
                     remainderStr = wordsArr.slice(2).join(" ")
                     duration[specResult2.timeUnit] = specResult2.durNum
+                    //if the spec still has more stuff in it but didn't error
+                    //that's the start of the message and the message simply has a comma
+                    if (`${wordsArr[0]} ${wordsArr[1]}`!==spec) {
+                        //!remind in 30 s thing1, thing2
+                        //`${wordsArr[0]} ${wordsArr[1]}`==="30 s"
+                        //spec==="30 s thing1"
+                        //wordsArr.slice(2).join(" ")==="thing1"
+                        //`, ${specs.slice(i).join(", ")}`===", thing2"
+                        if (specs[i+1]) remainderStr += `, ${specs.slice(i+1).join(", ")}`
+                        //remainderStr==="thing1, thing2"
+                        break;
+                    }
                 }
             } else {
                 remainderStr = wordsArr.slice(1).join(" ")
                 duration[specResult1.timeUnit] = specResult1.durNum
+                //if spec1 didnt error on its own AND has more stuff in it
+                //that's the start of the message and the message simply has a comma
+                if (wordsArr[0]!==spec) {
+                    //!remind in 30s thing1, thing2
+                    //wordsArr[0]==="30s"
+                    //spec==="30s thing1"
+                    //wordsArr.slice(1).join(" ")==="thing1"
+                    //`, ${specs.slice(i).join(", ")}`===", thing2"
+                    if (specs[i+1]) remainderStr += `, ${specs.slice(i+1).join(", ")}`
+                    //remainderStr==="thing1, thing2"
+                    break;
+                }
             }
 
             function testDurationSpec(specStr) {
@@ -405,3 +429,9 @@ module.exports = remind
 // 7/5/22
 //maybe would like to remind at 11am
 //maybe should send the reminder id as its own message for easy copying on mobile
+//would maybe like to freeform repeats
+
+// 9/14/22
+//for better logging, have a cancel prop on reminds; delete upon trigger to
+//    better differentiate between failures and deletes
+//
