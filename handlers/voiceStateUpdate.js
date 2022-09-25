@@ -58,22 +58,25 @@ async function voiceStateUpdate (oldMember, newMember) {
         } catch (error) {
             console.log("I had trouble finding the log channel")
             console.log(error)
+            //should consider posting a message in the command channel
+            //could also create a way to find a random channel to post errors in
         }
     } else if (logMode==="passive") {
         let voiceLog = await cleanUpVoiceLog(guildId)
         if (!voiceLog) return
         voiceLog.push(logItem)
-        post("voiceLogs", voiceLog, guildId)
+        await post("voiceLogs", voiceLog, guildId)
     } else if (logMode==="live2") {
-        console.log(newChannel, oldChannel)
-        return
         if (logItem.changeType==='join') newChannel.send(logItemsToString([logItem], false))
         else if (logItem.changeType==='leave') oldChannel.send(logItemsToString([logItem], false))
         else if (logItem.changeType==='move') {
-            newChannel.send(logItemsToString([logItem], false))
-            oldChannel.send(logItemsToString([logItem], false))
+            logItem.changeType = "leave"
+            await oldChannel.send(logItemsToString([logItem], false))
+            logItem.changeType = "join"
+            await newChannel.send(logItemsToString([logItem], false))
         }
     }
+    //invalid logmode not handled
 }
 
 module.exports = voiceStateUpdate

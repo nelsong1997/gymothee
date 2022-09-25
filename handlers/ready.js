@@ -2,6 +2,9 @@
 const get = require('../helpers/get.js')
 const sendReminder = require('../helpers/sendReminder.js')
 
+//client
+//const client = require('../client.js')
+
 async function ready() {
     // console.log(`did enter ready function ${new Date().toTimeString()}`)
 

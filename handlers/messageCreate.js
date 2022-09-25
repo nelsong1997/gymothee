@@ -37,6 +37,7 @@ async function messageCreate(message) {
             return
         }
     }
+
     const prefix = settings.prefix
 
     //non-commands

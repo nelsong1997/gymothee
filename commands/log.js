@@ -8,15 +8,15 @@ async function log (params, message) {
     if (!guildId) return //no longer works in dms
     let settings = await get("settings", guildId)
     if (!settings) return
-    let logMode = settings.logMode
+    const logMode = settings.logMode
 
     if (logMode==="off") {
         message.channel.send(`Voice logging is currently disabled. Please use ${settings.prefix}logmode to enable!`)
         return
-    } else if (logMode==="live") {
+    } else if (logMode!=="passive") {
         message.channel.send(
-            `Log mode is currently "live." Check out <#${settings.logChannelId}> ` +
-            `to view logs or change the log mode by using ${settings.prefix}logmode`
+            `Log mode is currently "${logMode}." The "log" command is only available in ` +
+                `"passive" mode.`
         )
         return
     }

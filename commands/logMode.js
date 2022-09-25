@@ -43,8 +43,8 @@ async function logMode(params, message) {
             `Voice logging enabled in "live" mode, but a channel needs to be set as the log channel. ` +
             `Please use the ${prefix}setlogchannel command.`
         )
-    // } else if (newLogMode==="live2") {
-    //     sendThis = `Voice logging enabled. Logs will be posted in the chat areas of voice channels.`
+    } else if (newLogMode==="live2") {
+         sendThis = `Voice logging enabled. Logs will be posted in the chat areas of voice channels.`
     } else {
         message.channel.send(`Invalid log mode: ${newLogMode}`)
         return
