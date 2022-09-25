@@ -51,7 +51,7 @@ async function logMode(params, message) {
     }
 
     settings.logMode = newLogMode
-    let result = post("settings", settings, guildId)
+    let result = await post("settings", settings, guildId)
     if (!result) {
         message.channel.send("Failed to update log mode")
         return

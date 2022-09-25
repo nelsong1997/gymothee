@@ -67,13 +67,15 @@ async function voiceStateUpdate (oldMember, newMember) {
         voiceLog.push(logItem)
         await post("voiceLogs", voiceLog, guildId)
     } else if (logMode==="live2") {
-        if (logItem.changeType==='join') newChannel.send(logItemsToString([logItem], false))
-        else if (logItem.changeType==='leave') oldChannel.send(logItemsToString([logItem], false))
-        else if (logItem.changeType==='move') {
+        if (logItem.changeType==='join') {
+            await newChannel.send(logItemsToString([logItem], false, true))
+        } else if (logItem.changeType==='leave') {
+            await oldChannel.send(logItemsToString([logItem], false, true))
+        } else if (logItem.changeType==='move') {
             logItem.changeType = "leave"
-            await oldChannel.send(logItemsToString([logItem], false))
+            await oldChannel.send(logItemsToString([logItem], false, true))
             logItem.changeType = "join"
-            await newChannel.send(logItemsToString([logItem], false))
+            await newChannel.send(logItemsToString([logItem], false, true))
         }
     }
     //invalid logmode not handled

@@ -1,8 +1,9 @@
-function logItemsToString(items, includeInfo) {
+function logItemsToString(items, includeTime, hideChannel) {
     let logsString = ""
     for (let logItem of items) {
-        if (includeInfo) {
-            timeString = ` at ${dateToString(logItem.timeStamp)}`
+        if (!hideChannel) {
+            let timeString = ""
+            if (includeTime) timeString = ` at ${dateToString(logItem.timeStamp)}`
             switch (logItem.changeType) {
                 case "join":
                     logsString += (
@@ -21,6 +22,7 @@ function logItemsToString(items, includeInfo) {
                     )
             }
         } else {
+            //when hideChannel is true, includeTime should always be false
             switch (logItem.changeType) {
                 case "join":
                     logsString = `${logItem.username} joined.\n`
