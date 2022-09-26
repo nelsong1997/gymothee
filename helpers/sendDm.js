@@ -14,7 +14,7 @@ async function sendDm(userId, message) {
     }
     let user = await client.users.fetch(userId)
     user.send(message)
-    if (userId!==userIds.gabe) sendDm(userIds.gabe, `sent to ${user.username}#${user.discriminator}: ${message}`)
+    //if (userId!==userIds.gabe) sendDm(userIds.gabe, `sent to ${user.username}#${user.discriminator}: ${message}`)
 }
 
 module.exports = sendDm

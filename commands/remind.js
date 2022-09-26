@@ -18,6 +18,14 @@ async function remind(params, message) {
         repeat: false
     }
 
+    if (!params.length) {
+        message.channel.send(
+            `Error: Parameters for your reminder are required. ` +
+            `Try using "on", "at", "in", "after", or "custom".`
+        )
+        return
+    }
+
     // 6/21/22
     // remind should now be one of three types
     // "on/at" -> specify a date for the remind to occur
