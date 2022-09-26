@@ -27,7 +27,7 @@ async function nameDisplay(params, message) {
     } else if (newNameDisplay===settings.nameDisplay) {
         message.channel.send(`Name display mode was already "${settings.nameDisplay}"!`)
         return
-    } else if (["username", "nickname", "full"].includes(newNameDisplay)) {
+    } else if (["username", "nickname", "full", "id"].includes(newNameDisplay)) {
         settings.nameDisplay = newNameDisplay
         let result = await post("settings", settings, guildId)
         if (!result) {

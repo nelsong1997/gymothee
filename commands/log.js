@@ -116,7 +116,7 @@ async function log (params, message) {
                 }
             }
         } else logItems = voiceLog.slice(range[0], range[1])
-        sendThis = logItemsToString(logItems.reverse(), true) || "No logs :("
+        sendThis = await logItemsToString(logItems.reverse(), true, false, guildId) || "No logs :("
     } else if (params[0]==="peruser") {//!log peruser 5
         let uniqueUsers = []
         let logItems = []
@@ -132,7 +132,7 @@ async function log (params, message) {
             }
         }
         logItems = logItems.slice(range[0])
-        sendThis = logItemsToString(logItems.reverse(), true) || "No Logs :("
+        sendThis = await logItemsToString(logItems.reverse(), true, false, guildId) || "No Logs :("
     } else if (params[0]==="user")  { //!log user 5 {id}
         let userId = params[2]
         let logItems = []
@@ -146,7 +146,7 @@ async function log (params, message) {
             }
         }
         logItems = logItems.slice(range[0])
-        sendThis = logItemsToString(logItems.reverse(), true) || "No Logs :("
+        sendThis = await logItemsToString(logItems.reverse(), true, false, guildId) || "No Logs :("
     } else {
         message.channel.send(`Error: Invalid log type. Try "all", "peruser", or "user"`)
         return

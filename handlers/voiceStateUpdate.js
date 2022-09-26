@@ -20,11 +20,11 @@ async function voiceStateUpdate (oldMember, newMember) {
     
     //build log entry to add to logs or post immediately
     let logItem = null
-    let oldUser = await client.users.fetch(oldMember.id)
+    let oldUser = await client.users.fetch(oldMember.id) //can deprecate?
     //there's always an old member
     //but if they are joining oldMember will have no channel id
     logItem = {
-        username: oldUser.username,
+        username: oldUser.username, //can deprecate?
         userId: oldMember.id,
         timeStamp: new Date(),
         guildId: guildId
@@ -54,7 +54,7 @@ async function voiceStateUpdate (oldMember, newMember) {
     if (logMode==="live" && settings.logChannelId) {
         try {
             let logChannel = await client.channels.fetch(settings.logChannelId)
-            logChannel.send(logItemsToString([logItem], false))
+            logChannel.send(await logItemsToString([logItem], false, false, guildId))
         } catch (error) {
             console.log("I had trouble finding the log channel")
             console.log(error)
@@ -68,14 +68,14 @@ async function voiceStateUpdate (oldMember, newMember) {
         await post("voiceLogs", voiceLog, guildId)
     } else if (logMode==="live2") {
         if (logItem.changeType==='join') {
-            await newChannel.send(logItemsToString([logItem], false, true))
+            await newChannel.send(await logItemsToString([logItem], false, true, guildId))
         } else if (logItem.changeType==='leave') {
-            await oldChannel.send(logItemsToString([logItem], false, true))
+            await oldChannel.send(await logItemsToString([logItem], false, true, guildId))
         } else if (logItem.changeType==='move') {
             logItem.changeType = "leave"
-            await oldChannel.send(logItemsToString([logItem], false, true))
+            await oldChannel.send(await logItemsToString([logItem], false, true, guildId))
             logItem.changeType = "join"
-            await newChannel.send(logItemsToString([logItem], false, true))
+            await newChannel.send(await logItemsToString([logItem], false, true, guildId))
         }
     }
     //invalid logmode not handled

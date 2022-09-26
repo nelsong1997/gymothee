@@ -10,12 +10,16 @@ async function displayName(userId, guildId) {
     const user = await findUser(userId)
     if (!user) return "Unknown"
 
-    let settings = await get("settings", guildId)
-    if (!settings) return "Unknown"
-
-    let displayType = settings.nameDisplay
-    if (!displayType) {
-        settings.nameDisplay = "username"
+    let displayType = "full"
+    if (guildId) {
+        let settings = await get("settings", guildId)
+        if (!settings) return "Unknown"
+        displayType = settings.nameDisplay
+    }
+    
+    if (guildId && !displayType) {
+        settings.nameDisplay = "full"
+        displayType = "full"
         await post("settings", settings, guildId)
     }
 
@@ -24,9 +28,10 @@ async function displayName(userId, guildId) {
         case "nickname":
             let guild = await client.guilds.fetch(guildId)
             let guildMember = await guild.members.fetch(userId)
-            return `**${guildMember.nickname}**`
+            let theNickname = guildMember.nickname ? guildMember.nickname : user.username
+            return `**${theNickname}**`
         case "full": return `**${user.username}**#${user.discriminator}`
-        //case "id": return userId
+        case "id": return userId
     }
 }
 

@@ -1,4 +1,7 @@
-function logItemsToString(items, includeTime, hideChannel) {
+//helpers
+const displayName = require("../helpers/displayName")
+
+async function logItemsToString(items, includeTime, hideChannel, guildId) {
     let logsString = ""
     for (let logItem of items) {
         if (!hideChannel) {
@@ -7,17 +10,17 @@ function logItemsToString(items, includeTime, hideChannel) {
             switch (logItem.changeType) {
                 case "join":
                     logsString += (
-                        `${logItem.username} joined **${logItem.newChannelName}**${timeString}.\n`
+                        `${await displayName(logItem.userId, guildId)} joined **${logItem.newChannelName}**${timeString}.\n`
                     )
                     break;
                 case "leave":
                     logsString += (
-                        `${logItem.username} left **${logItem.oldChannelName}**${timeString}.\n` 
+                        `${await displayName(logItem.userId, guildId)} left **${logItem.oldChannelName}**${timeString}.\n` 
                     )
                     break;
                 case "move":
                     logsString += (
-                        `${logItem.username} left **${logItem.oldChannelName}** and ` +
+                        `${await displayName(logItem.userId, guildId)} left **${logItem.oldChannelName}** and ` +
                         `joined **${logItem.newChannelName}**${timeString}.\n`
                     )
             }
@@ -25,10 +28,10 @@ function logItemsToString(items, includeTime, hideChannel) {
             //when hideChannel is true, includeTime should always be false
             switch (logItem.changeType) {
                 case "join":
-                    logsString = `${logItem.username} joined.\n`
+                    logsString = `${await displayName(logItem.userId, guildId)} joined.\n`
                     break;
                 case "leave":
-                    logsString = `${logItem.username} left.\n`
+                    logsString = `${await displayName(logItem.userId, guildId)} left.\n`
             }
         }
     }
