@@ -87,7 +87,7 @@ async function remind(params, message) {
             `. User(s): ${whomStr} ` +
             `will be notified via ${newRemind.deliver==="dm" ? "DM" : "this text channel"}.`
         )
-        if (newRemind.repeat) { //probably bad practice to pre-notify someone for a reminder they'll receive once
+        if (newRemind.repeat) {
             for (let userId of newRemind.whom) {
                 if (userId===message.author.id) continue;
                 sendDm(

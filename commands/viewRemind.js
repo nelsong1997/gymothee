@@ -80,6 +80,9 @@ async function formatRemind(remindObj) {
     }
     let repeatValue = remindObj.repeat
     let repeatStr = "None"
+    //#weekdays
+    //gonna need to check the actual props of repeat
+    //if we have weekdays, just list them out after every
     if (repeatValue) repeatStr = `Every ${repeatValue.freqNum} ${repeatValue.freqTimeUnit}${repeatValue.freqNum > 1 ? "s" : ""}`
     return (
         `**ID:** ${remindObj.id}\n` +

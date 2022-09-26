@@ -76,6 +76,12 @@ async function sendReminder(remindId, intentDate, late) {
         }
     }
     if (remind.repeat) {
+        //#weekdays
+        //check for weekdays prop
+        //get current dow
+        //iterate thru array until found 1). day before or eq 2). day after
+        //take diff between current day and the day found; add to current remind date
+        //set remind date to the new date
         let freqNum = remind.repeat.freqNum
         // {
         //     freqTimeUnit: "day",

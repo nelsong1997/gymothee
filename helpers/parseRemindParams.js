@@ -54,6 +54,15 @@ async function parseRemindParams(message, remind, keyValuePairs) {
                     remind.repeat.freqTimeUnit = timeUnit
                     changes.repeat = `every ${num} ${timeUnit}${num > 1 ? "s" : ""}`
                 }
+                // #weekdays
+                // if valueArr[0]==="weekdays"
+                // slice remainder of arr and join together
+                // re-split by comma, strip spaces
+                // validate & sort days that are input
+                // store them in a new prop of the remind.repeat obj
+                // dont store the other repeat props
+                // fill out changes appropriately
+
                 break;
             case "message":
                 if (value.length > 200) {
