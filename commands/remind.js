@@ -48,6 +48,7 @@ async function remind(params, message) {
         let remainderStr = params.slice(result.dateSpecParams + 1).join(" ")
 
         let result2 = await parseMsgAndRecips(remainderStr, message)
+        if (!result2) return
         newRemind.message = result2.message
         newRemind.whom = result2.whom
         whomStr = result2.whomStr
