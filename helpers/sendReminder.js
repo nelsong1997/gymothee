@@ -40,7 +40,7 @@ async function sendReminder(remindId, intentDate, late) {
         }
     }
     if (!remind) {
-        console.log(`failed to find remind with id: ${remindId}`)
+        //console.log(`failed to find remind with id: ${remindId}`)
         await onSendReminderEnd()
         return
     }
@@ -76,44 +76,63 @@ async function sendReminder(remindId, intentDate, late) {
         }
     }
     if (remind.repeat) {
-        //#weekdays
-        //check for weekdays prop
-        //get current dow
-        //iterate thru array until found 1). day before or eq 2). day after
-        //take diff between current day and the day found; add to current remind date
-        //set remind date to the new date
-        let freqNum = remind.repeat.freqNum
-        // {
-        //     freqTimeUnit: "day",
-        //     freqNum: 1,
-        //     weekdays: null,
-        //     dayOfMonth: null
-        // }
-        switch (remind.repeat.freqTimeUnit) {
-            case "day":
-                remindDate.setDate(remindDate.getDate() + freqNum)
-                break;
-            case "week":
-                remindDate.setDate(remindDate.getDate() + 7 * freqNum)
-                break;
-            case "month":
-                remindDate.setMonth(remindDate.getMonth() + freqNum)
-                break;
-            case "year":
-                remindDate.setFullYear(remindDate.getFullYear() + freqNum)
+        let now = new Date()
+        if (remind.repeat.weekdays) {
+            const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+            let nowDayIndex = remindDate.getDay()
+            let nextWeekdayIndex = null
+            //remind.repeat.weekdays is sorted
+            for (let remindDay of remind.repeat.weekdays) {
+                let remindDOWIndex = weekdays.indexOf(remindDay)
+                if (nowDayIndex <= remindDOWIndex) {
+                    nextWeekdayIndex = remindDOWIndex
+                    let daysDiff = nextWeekdayIndex - nowDayIndex
+                    remindDate.setDate(now.getDate() + daysDiff)
+                    break;
+                }
+            }
+            //use the first day next week if there is nothing left this week
+            if (!nextWeekdayIndex) {
+                nextWeekdayIndex = remind.repeat.weekdays[0]
+                let daysDiff = nextWeekdayIndex - nowDayIndex + 7
+                remindDate.setDate(now.getDate() + daysDiff)
+            }
+        } else {
+            let freqNum = remind.repeat.freqNum
+            // {
+            //     freqTimeUnit: "day",
+            //     freqNum: 1,
+            //     weekdays: null,
+            //     dayOfMonth: null
+            // }
+            switch (remind.repeat.freqTimeUnit) {
+                case "day":
+                    remindDate.setDate(remindDate.getDate() + freqNum)
+                    break;
+                case "week":
+                    remindDate.setDate(remindDate.getDate() + 7 * freqNum)
+                    break;
+                case "month":
+                    remindDate.setMonth(remindDate.getMonth() + freqNum)
+                    break;
+                case "year":
+                    remindDate.setFullYear(remindDate.getFullYear() + freqNum)
+            }
         }
         remind.date = remindDate
 
         //in the rare case that the bot was offline and it sends a late reminder at midnight
         //and then it needs to send another one the same day
         //copied and modified from handlers/ready.js
-        let now = new Date()
+
+        //need to refactor this for the case that the bot has been offline for a very long time
+        //needs to keep adding time intervals to the reminder date until the date is after now
         let nextMidnight = new Date()
         nextMidnight.setDate(nextMidnight.getDate() + 1)
         nextMidnight.setHours(0, 0, 0, 0)
         let tillNextMidnight = nextMidnight - now
         let tillRemind = remindDate - now
-        if (tillRemind < tillNextMidnight) {
+        if (tillRemind < tillNextMidnight && tillRemind > 0) {
             //remind occurs today; set timeout to send it
             setTimeout(() => sendReminder(remind.id, remindDate), tillRemind)
         }

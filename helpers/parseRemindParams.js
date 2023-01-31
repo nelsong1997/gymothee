@@ -21,6 +21,7 @@ async function parseRemindParams(message, remind, keyValuePairs) {
         let value = kvpArr[1]
         if (!value.startsWith('"') && value.endsWith('"')) {
             message.channel.send(`Error: The value specified for ${key} should be nested in quotes ("value").`)
+            return
         }
         value = value.slice(1, value.length - 1).toLowerCase() //get rid of quotes
 
@@ -30,13 +31,58 @@ async function parseRemindParams(message, remind, keyValuePairs) {
         }
         switch (key) {
             case "repeat":
+                //lowercasing is okay because it would only matter for messages
+                value = value.toLowerCase()
+                let valueArr = value.split(" ")
                 if (value==="false") {
                     remind.repeat = false
                     changes.repeat = "disabled"
+                } else if (valueArr[0]==="weekdays") {
+                    const validWeekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+                    let weekdaysInputStr = valueArr.slice(1).join(" ")
+                    let weekdaysInputArr = weekdaysInputStr.split(",")
+                    let weekdaysInputObj = {}
+                    //validate input
+                    //check for empty
+                    if (weekdaysInputArr.length===0) {
+                        message.channel.send(`Error: Please input at least one weekday`)
+                        return
+                    }
+                    for (let i=0; i<weekdaysInputArr.length; i++) {
+                        weekdaysInputArr[i] = weekdaysInputArr[i].trim()
+                        //mon => Mon
+                        weekdaysInputArr[i] = weekdaysInputArr[i].charAt(0).toUpperCase() + weekdaysInputArr[i].slice(1)
+                        let day = weekdaysInputArr[i]
+                        //check whether input is a real day
+                        if (!validWeekdays.includes(day)) {
+                            message.channel.send(
+                                `Error: ${day} is not a valid weekday. ` +
+                                `Please use only the first three letters of each day and separate with commas.`
+                            )
+                            return
+                        }
+                        //check for duplicate
+                        if (weekdaysInputObj[day]) {
+                            message.channel.send(`Error: "${day}" was input more than once.`)
+                            return
+                        }
+                        weekdaysInputObj[day] = true
+                    }
+                    //sort
+                    console.log(weekdaysInputArr)
+                    weekdaysInputArr.sort((a, b) => validWeekdays.indexOf(a) - validWeekdays.indexOf(b))
+                    console.log(weekdaysInputArr)
+                    //erase any possible irrelevant data
+                    remind.repeat = {}
+                    //populate reminder
+                    remind.repeat.weekdays = weekdaysInputArr
+                    //populate changes prop
+                    changes.repeat = `Every ${weekdaysInputArr.join(", ")}`
                 } else {
-                    let valueArr = value.split(" ")
                     if (valueArr.length!==2) {
+                        //should add weekday hint
                         message.channel.send(`Error: bad repeat value format. Try "<num> <timeUnit>" or "false" to disable`)
+                        return
                     }
                     let num = Number(valueArr[0])
                     if (isNaN(num) || num%1 || num < 0) {
@@ -52,21 +98,12 @@ async function parseRemindParams(message, remind, keyValuePairs) {
                     if (!remind.repeat) remind.repeat = {}
                     remind.repeat.freqNum = num
                     remind.repeat.freqTimeUnit = timeUnit
-                    changes.repeat = `every ${num} ${timeUnit}${num > 1 ? "s" : ""}`
+                    changes.repeat = `Every ${num} ${timeUnit}${num > 1 ? "s" : ""}`
                 }
-                // #weekdays
-                // if valueArr[0]==="weekdays"
-                // slice remainder of arr and join together
-                // re-split by comma, strip spaces
-                // validate & sort days that are input
-                // store them in a new prop of the remind.repeat obj
-                // dont store the other repeat props
-                // fill out changes appropriately
-
                 break;
             case "message":
                 if (value.length > 200) {
-                    message.channel.send("Error: new message is too long")
+                    message.channel.send(`Error: Message is too long (${value.length}/200 characters)`)
                     return
                 }
                 remind.message = value
