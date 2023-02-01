@@ -97,17 +97,25 @@ async function remind(params, message) {
         message.channel.send(result.error)
         return
     } else if (result) {
+        //these strs need to be merged into a func
         message.channel.send(
             `Reminder with id: ${remindId} created. This reminder will fire on ` +
             `${newRemind.date.toLocaleString('en-us')}` +
-            (newRemind.repeat ? `, repeating every ${newRemind.repeat.freqNum} ${newRemind.repeat.freqTimeUnit}` : ``) +
-            ((newRemind.repeat && newRemind.repeat.freqNum > 1) ? "s" : "") +
+            //sorry
+            (newRemind.repeat ? `, repeating every ` +
+                (newRemind.repeat.weekdays ?
+                    newRemind.repeat.weekdays.join(", ") :
+                    `${newRemind.repeat.freqNum} ${newRemind.repeat.freqTimeUnit}` +
+                    (newRemind.repeat.freqNum > 1 ? "s" : "")
+                )
+            : "") +
             `. User(s): ${whomStr} ` +
             `will be notified via ${newRemind.deliver==="dm" ? "DM" : "this text channel"}.`
         )
         if (newRemind.repeat) {
             for (let userId of newRemind.whom) {
                 if (userId===message.author.id) continue;
+                console.log(newRemind.weekdays)
                 sendDm(
                     userId,
                     `Reminder with id: ${remindId} was created by user: ` +
@@ -115,8 +123,11 @@ async function remind(params, message) {
                     `with message: "${newRemind.message}". ` +
                     `This reminder will fire on ` +
                     `${newRemind.date.toLocaleString('en-us')}` +
-                    (newRemind.repeat ? `, repeating every ${newRemind.repeat.freqNum} ${newRemind.repeat.freqTimeUnit}` : ``) +
-                    ((newRemind.repeat && newRemind.repeat.freqNum > 1) ? "s" : "") +
+                    //sorry
+                    `, repeating every ` + 
+                    (newRemind.repeat.weekdays ? `${newRemind.repeat.weekdays.join(", ")}` :
+                    `${newRemind.repeat.freqNum} ${newRemind.repeat.freqTimeUnit}` +
+                    (newRemind.repeat.freqNum > 1 ? "s" : "")) +
                     `. User(s): ${whomStr} ` +
                     `will be notified via ${newRemind.deliver==="dm" ? "DM" : "this text channel"}.`
                 )
