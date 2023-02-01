@@ -3,6 +3,7 @@ const createReminder = require('../helpers/createReminder.js')
 const parseRemindParams = require('../helpers/parseRemindParams.js')
 const sendDm = require('../helpers/sendDm.js')
 const findUser = require('../helpers/findUser.js')
+const checkDateWeekdayMatch = require('../helpers/checkDateWeekdayMatch.js')
 
 async function remind(params, message) {
     let remindId = '_' + Math.random().toString(36).slice(2, 11); //gen unique id for remind
@@ -80,6 +81,14 @@ async function remind(params, message) {
     if (!newRemind.date.getTime()) {
         message.channel.send("Error: Invalid date/time.")
         return
+    }
+
+    if (newRemind.repeat && newRemind.repeat.weekdays) {
+        let checkWeekdayResult = checkDateWeekdayMatch(newRemind.date, newRemind.repeat.weekdays)
+        if (checkWeekdayResult.error) {
+            message.channel.send(checkWeekdayResult.error)
+            return
+        }
     }
 
     let result = await createReminder(newRemind)

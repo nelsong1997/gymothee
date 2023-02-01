@@ -79,12 +79,13 @@ async function sendReminder(remindId, intentDate, late) {
         let now = new Date()
         if (remind.repeat.weekdays) {
             const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
-            let nowDayIndex = remindDate.getDay()
+            let nowDayIndex = now.getDay()
+            let oldRemindDayIndex = remindDate.getDay()
             let nextWeekdayIndex = null
             //remind.repeat.weekdays is sorted
             for (let remindDay of remind.repeat.weekdays) {
                 let remindDOWIndex = weekdays.indexOf(remindDay)
-                if (nowDayIndex <= remindDOWIndex) {
+                if (nowDayIndex <= remindDOWIndex && oldRemindDayIndex < remindDOWIndex) {
                     nextWeekdayIndex = remindDOWIndex
                     let daysDiff = nextWeekdayIndex - nowDayIndex
                     remindDate.setDate(now.getDate() + daysDiff)

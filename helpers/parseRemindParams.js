@@ -1,9 +1,11 @@
+//helpers
 const findUser = require('./findUser.js')
+const checkDateWeekdayMatch = require('./checkDateWeekdayMatch.js')
 
 async function parseRemindParams(message, remind, keyValuePairs) {
     const validKeys = ["message", "whom", "date", "repeat", "deliver"]
     if (!keyValuePairs.length) {
-        message.channel.send("Error: no edits specified")
+        message.channel.send("Error: no paramters specified")
         return
     }
     let changes = {}
@@ -68,10 +70,16 @@ async function parseRemindParams(message, remind, keyValuePairs) {
                         }
                         weekdaysInputObj[day] = true
                     }
+                    //make sure remind date is one of the specified weekdays...if it exists
+                    if (remind.date) {
+                        let checkWeekdayResult = checkDateWeekdayMatch(remind.date, weekdaysInputArr)
+                        if (checkWeekdayResult.error) {
+                            message.channel.send(checkWeekdayResult.error)
+                            return
+                        }
+                    }
                     //sort
-                    console.log(weekdaysInputArr)
                     weekdaysInputArr.sort((a, b) => validWeekdays.indexOf(a) - validWeekdays.indexOf(b))
-                    console.log(weekdaysInputArr)
                     //erase any possible irrelevant data
                     remind.repeat = {}
                     //populate reminder
@@ -124,6 +132,14 @@ async function parseRemindParams(message, remind, keyValuePairs) {
                 }
                 remind.date = newDate
                 changes.date = newDate.toLocaleString('en-us')
+                //make sure remind date is one of the specified weekdays...if it exists
+                if (remind.repeat && remind.repeat.weekdays) {
+                    let checkWeekdayResult = checkDateWeekdayMatch(remind.date, remind.repeat.weekdays)
+                    if (checkWeekdayResult.error) {
+                        message.channel.send(checkWeekdayResult.error)
+                        return
+                    }
+                }
                 break;
             case "whom":
                 let usersArrIn = value.split(", ")
