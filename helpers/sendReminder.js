@@ -94,7 +94,7 @@ async function sendReminder(remindId, intentDate, late) {
             }
             //use the first day next week if there is nothing left this week
             if (!nextWeekdayIndex) {
-                nextWeekdayIndex = remind.repeat.weekdays[0]
+                let nextWeekdayIndex = weekdays.indexOf(remind.repeat.weekdays[0])
                 let daysDiff = nextWeekdayIndex - nowDayIndex + 7
                 remindDate.setDate(now.getDate() + daysDiff)
             }

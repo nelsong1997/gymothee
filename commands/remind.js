@@ -99,7 +99,7 @@ async function remind(params, message) {
     } else if (result) {
         //these strs need to be merged into a func
         message.channel.send(
-            `Reminder with id: ${remindId} created. This reminder will fire on ` +
+            `Reminder with id: ${remindId} created. This reminder will send on ` +
             `${newRemind.date.toLocaleString('en-us')}` +
             //sorry
             (newRemind.repeat ? `, repeating every ` +
@@ -121,7 +121,7 @@ async function remind(params, message) {
                     `Reminder with id: ${remindId} was created by user: ` +
                     `${message.author.username}#${message.author.discriminator} ` +
                     `with message: "${newRemind.message}". ` +
-                    `This reminder will fire on ` +
+                    `This reminder will send on ` +
                     `${newRemind.date.toLocaleString('en-us')}` +
                     //sorry
                     `, repeating every ` + 
