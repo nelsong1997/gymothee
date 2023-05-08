@@ -11,18 +11,14 @@ async function displayName(userId, guildId) {
     if (!user) return "Unknown"
 
     let displayType = "full"
-    console.log(guildId)
     if (guildId) {
         let settings = await get("settings", guildId)
-        console.log(settings)
         if (!settings) return "Unknown"
-        displayType = settings.nameDisplay
-    }
-    
-    if (guildId && !displayType) {
-        settings.nameDisplay = "full"
-        displayType = "full"
-        await post("settings", settings, guildId)
+        if (!settings.nameDisplay) {
+            settings.nameDisplay = "full"
+            displayType = "full"
+            await post("settings", settings, guildId)
+        } else displayType = settings.nameDisplay
     }
 
     switch (displayType) {
