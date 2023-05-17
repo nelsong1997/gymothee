@@ -15,18 +15,10 @@ const guildCreate = require('./handlers/guildCreate.js')
 
 client.on("ready", () => ready())
 
-client.on("messageCreate", (message) => {
-    try {
-        messageCreate(message)
-    } catch (err) {
-        console.log(`I had trouble with this message:\n${message}\n${error}`)
-    }
-})
+client.on("messageCreate", (message) =>  messageCreate(message))
 
 client.on("voiceStateUpdate", (oldMember, newMember) => voiceStateUpdate(oldMember, newMember))
 
 client.on("guildMemberAdd", (member) => guildMemberAdd(member))
 
 client.on("guildCreate", (guild) => guildCreate(guild))
-
-// client.on("messageDelete", (message) => console.log(message.content)) //considering message un-delete function

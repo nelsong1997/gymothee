@@ -18,7 +18,7 @@ function roll (params, message) {
         if (params.length > 1) sendThis += `**Roll ${i+1} (D${numSides})**: ${rollDie(numSides)}\n`
         else sendThis = rollDie(numSides)
     }
-
+    
     message.channel.send(sendThis.toString())
 }
 

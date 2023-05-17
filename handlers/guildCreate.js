@@ -16,7 +16,7 @@ async function guildCreate(guild) {
         `I was added to a new guild!\n` +
             `Guild Name: ${guild.name}\n` + 
             `Guild id: ${guild.id}\n` +
-            `Guild creator: ${creatorStr}` +
+            `Guild creator: ${creatorStr}\n` +
             `Member count: ${guild.memberCount}`
     )
 }
