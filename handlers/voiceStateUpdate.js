@@ -3,7 +3,6 @@ const client = require('../client.js')
 
 //helpers
 const displayName = require("../helpers/displayName")
-const logItemsToString = require('../helpers/logItemsToString.js')
 const get = require('../helpers/get.js')
 const sendMessage = require('../helpers/sendMessage.js')
 
