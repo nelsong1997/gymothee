@@ -1,5 +1,7 @@
+//helpers
 const get = require('../helpers/get.js')
 const post = require('../helpers/post.js')
+const sendMessage = require('../helpers/sendMessage.js')
 
 async function setWelcomeChannel(message) {
     let guildId = message.guild.id
@@ -9,18 +11,18 @@ async function setWelcomeChannel(message) {
     if (!settings) return
 
     if (settings.welcomeChannelId===channelId) {
-        message.channel.send(`Welcome channel was already set to <#${channelId}>.`)
+        sendMessage(message.channel, `Welcome channel was already set to <#${channelId}>.`)
         return
     }
     settings.welcomeChannelId = channelId
 
     let result = await post("settings", settings, guildId)
     if (!result) {
-        message.channel.send("Failed to update settings")
+        sendMessage(message.channel, "Failed to update settings")
         return
     }
 
-    message.channel.send(
+    sendMessage(message.channel, 
         `I will now welcome new users here in <#${channelId}>! ` +
         `Please be sure to use "setwelcomemessage" command to set the message.`
     )

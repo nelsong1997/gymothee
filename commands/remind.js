@@ -4,6 +4,7 @@ const parseRemindParams = require('../helpers/parseRemindParams.js')
 const sendDm = require('../helpers/sendDm.js')
 const findUser = require('../helpers/findUser.js')
 const checkDateWeekdayMatch = require('../helpers/checkDateWeekdayMatch.js')
+const sendMessage = require('../helpers/sendMessage.js')
 
 async function remind(params, message) {
     let remindId = '_' + Math.random().toString(36).slice(2, 11); //gen unique id for remind
@@ -20,7 +21,7 @@ async function remind(params, message) {
     }
 
     if (!params.length) {
-        message.channel.send(
+        sendMessage(message.channel, 
             `Error: Parameters for your reminder are required. ` +
             `Try using "on", "at", "in", "after", or "custom".`
         )
@@ -41,7 +42,7 @@ async function remind(params, message) {
 
         let result = parseDate(whenArr)
         if (result.error) {
-            message.channel.send(result.error)
+            sendMessage(message.channel, result.error)
             return
         }
         newRemind.date = result.date
@@ -57,7 +58,7 @@ async function remind(params, message) {
         let remindParamsStr = params.slice(1).join(" ")
         let result = parseDuration(remindParamsStr)
         if (result.error) {
-            message.channel.send(result.error)
+            sendMessage(message.channel, result.error)
             return
         }
         newRemind.date = result.date
@@ -73,20 +74,20 @@ async function remind(params, message) {
         newRemind = result.remind
         whomStr = result.changes.whom || message.author.username + "#" + message.author.discriminator
     } else {
-        message.channel.send("Failed to parse your reminder command.")
+        sendMessage(message.channel, "Failed to parse your reminder command.")
         return
     }
 
     //date validation
     if (!newRemind.date.getTime()) {
-        message.channel.send("Error: Invalid date/time.")
+        sendMessage(message.channel, "Error: Invalid date/time.")
         return
     }
 
     if (newRemind.repeat && newRemind.repeat.weekdays) {
         let checkWeekdayResult = checkDateWeekdayMatch(newRemind.date, newRemind.repeat.weekdays)
         if (checkWeekdayResult.error) {
-            message.channel.send(checkWeekdayResult.error)
+            sendMessage(message.channel, checkWeekdayResult.error)
             return
         }
     }
@@ -94,11 +95,11 @@ async function remind(params, message) {
     let result = await createReminder(newRemind)
 
     if (result && result.error) {
-        message.channel.send(result.error)
+        sendMessage(message.channel, result.error)
         return
     } else if (result) {
         //these strs need to be merged into a func
-        message.channel.send(
+        sendMessage(message.channel, 
             `Reminder with id: ${remindId} created. This reminder will send on ` +
             `${newRemind.date.toLocaleString('en-us')}` +
             //sorry
@@ -413,12 +414,12 @@ async function parseMsgAndRecips(str, message) {
         //for now only handle id or name#discriminator
         for (let user of recipUsersArr) {
             if (!user.startsWith("@")) {
-                message.channel.send("Error: couldn't parse recipients")
+                sendMessage(message.channel, "Error: couldn't parse recipients")
                 return
             }
             let theUser = await findUser(user.slice(1))
             if (!theUser) {
-                message.channel.send(`Error: couldn't find user for recipient: "${user}"`)
+                sendMessage(message.channel, `Error: couldn't find user for recipient: "${user}"`)
                 return
             }
             whomUserIds.push(theUser.id)

@@ -1,5 +1,7 @@
+//helpers
 const get = require("../helpers/get")
 const post = require("../helpers/post")
+const sendMessage = require('../helpers/sendMessage.js')
 
 async function unsetCommandChannel(message) {
     let guildId = message.guild.id
@@ -7,16 +9,16 @@ async function unsetCommandChannel(message) {
     if (!settings) return
 
     if (!settings.commandChannelId) {
-        message.channel.send(`I didn't have a command channel set...`)
+        sendMessage(message.channel, `I didn't have a command channel set...`)
         return
     }
     settings.commandChannelId = null
     let result = post("settings", settings, guildId)
     if (!result) {
-        message.channel.send("Failed to update settings")
+        sendMessage(message.channel, "Failed to update settings")
         return
     }
-    message.channel.send(`I will now listen for commands in all channels!`)
+    sendMessage(message.channel, `I will now listen for commands in all channels!`)
 }
 
 module.exports = unsetCommandChannel

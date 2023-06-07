@@ -3,6 +3,7 @@ const client = require('../client.js')
 //helpers
 const sendDm = require('../helpers/sendDm.js')
 const get = require('../helpers/get.js')
+const sendMessage = require('../helpers/sendMessage.js')
 
 //json
 const userIds = require('../json/userIds.json')
@@ -10,12 +11,10 @@ const userIds = require('../json/userIds.json')
 //commands
 const say = require('../commands/say.js')
 const flip = require('../commands/flip.js')
-const log = require('../commands/log.js')
 const roll = require('../commands/roll.js')
 const help = require('../commands/help.js')
 const setCommandChannel = require('../commands/setCommandChannel.js')
 const unsetCommandChannel = require('../commands/unsetCommandChannel.js')
-const setLogChannel = require('../commands/setLogChannel.js')
 const setWelcomeChannel = require('../commands/setWelcomeChannel.js')
 const setPrefix = require('../commands/setPrefix.js')
 const logMode = require('../commands/logMode.js')
@@ -43,13 +42,13 @@ async function messageCreate(message) {
 
     //non-commands
     if (message.mentions && message.mentions.users.get(client.user.id)) {
-        message.channel.send(`my prefix here is ${prefix} (try ${prefix}help)`)
+        sendMessage(message.channel, `my prefix here is ${prefix} (try ${prefix}help)`)
     }
 
     if (message.guild===null && message.author.id!==userIds.gabe && !message.content.startsWith(prefix)) {
         //fwd to me if it's a dm, not command, and im not the author
         //incorrectly entered commands (anything starting with prefix) will not fwd to me
-        message.channel.send("Your message has been forwarded")
+        sendMessage(message.channel, "Your message has been forwarded")
         sendDm(userIds.gabe, `${message.author.username}#${message.author.discriminator} said to me: ${message.content}`)
         return
     }
@@ -100,9 +99,6 @@ async function messageCreate(message) {
         !settings.commandChannelId)
     ) { //must be in command channel or there is no command channel
         switch (command) {
-            case "log":
-                log(params, message)
-                return
             case "setprefix":
                 setPrefix(params, message)
                 return
@@ -128,9 +124,6 @@ async function messageCreate(message) {
                 return
             case "unsetcommandchannel":
                 unsetCommandChannel(message)
-                return
-            case "setlogchannel":
-                setLogChannel(message)
                 return
             case "setwelcomechannel":
                 setWelcomeChannel(message)

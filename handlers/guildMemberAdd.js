@@ -3,6 +3,7 @@ const client = require('../client.js')
 
 //helpers
 const get = require('../helpers/get.js')
+const sendMessage = require('../helpers/sendMessage.js')
 
 async function guildMemberAdd (member) {
     if (member.user.bot) return
@@ -14,7 +15,7 @@ async function guildMemberAdd (member) {
         // console.log("attempting to post welcome msg")
         try {
             let welcomeChannel = await client.channels.fetch(settings.welcomeChannelId)
-            welcomeChannel.send(settings.welcomeMessage.replaceAll("<@mention>", `<@${member.id}>`))
+            sendMessage(welcomeChannel, settings.welcomeMessage.replaceAll("<@mention>", `<@${member.id}>`))
         } catch (error) {
             console.log("probably couldnt find welcome channel")
             //maybe post about this in the command channel?

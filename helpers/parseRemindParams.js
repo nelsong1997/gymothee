@@ -1,34 +1,35 @@
 //helpers
 const findUser = require('./findUser.js')
 const checkDateWeekdayMatch = require('./checkDateWeekdayMatch.js')
+const sendMessage = require('../helpers/sendMessage.js')
 
 async function parseRemindParams(message, remind, keyValuePairs) {
     const validKeys = ["message", "whom", "date", "repeat", "deliver"]
     if (!keyValuePairs.length) {
-        message.channel.send("Error: no paramters specified")
+        sendMessage(message.channel, "Error: no paramters specified")
         return
     }
     let changes = {}
     for (let keyValuePair of keyValuePairs) {
         if (!keyValuePair.includes("=")) {
-            message.channel.send(`Error: Key value pair requires "=" between`)
+            sendMessage(message.channel, `Error: Key value pair requires "=" between`)
             return
         }
         let kvpArr = keyValuePair.split("=")
         let key = kvpArr[0].toLowerCase()
         if (!validKeys.includes(key)) {
-            message.channel.send(`Error: invalid key "${key}"`)
+            sendMessage(message.channel, `Error: invalid key "${key}"`)
             return
         }
         let value = kvpArr[1]
         if (!value.startsWith('"') && value.endsWith('"')) {
-            message.channel.send(`Error: The value specified for ${key} should be nested in quotes ("value").`)
+            sendMessage(message.channel, `Error: The value specified for ${key} should be nested in quotes ("value").`)
             return
         }
         value = value.slice(1, value.length - 1).toLowerCase() //get rid of quotes
 
         if (changes[key]) {
-            message.channel.send(`Error: you can't set the same key (${key}) twice with the same command`)
+            sendMessage(message.channel, `Error: you can't set the same key (${key}) twice with the same command`)
             return
         }
         switch (key) {
@@ -47,7 +48,7 @@ async function parseRemindParams(message, remind, keyValuePairs) {
                     //validate input
                     //check for empty
                     if (weekdaysInputArr.length===0) {
-                        message.channel.send(`Error: Please input at least one weekday`)
+                        sendMessage(message.channel, `Error: Please input at least one weekday`)
                         return
                     }
                     for (let i=0; i<weekdaysInputArr.length; i++) {
@@ -57,7 +58,7 @@ async function parseRemindParams(message, remind, keyValuePairs) {
                         let day = weekdaysInputArr[i]
                         //check whether input is a real day
                         if (!validWeekdays.includes(day)) {
-                            message.channel.send(
+                            sendMessage(message.channel, 
                                 `Error: ${day} is not a valid weekday. ` +
                                 `Please use only the first three letters of each day and separate with commas.`
                             )
@@ -65,7 +66,7 @@ async function parseRemindParams(message, remind, keyValuePairs) {
                         }
                         //check for duplicate
                         if (weekdaysInputObj[day]) {
-                            message.channel.send(`Error: "${day}" was input more than once.`)
+                            sendMessage(message.channel, `Error: "${day}" was input more than once.`)
                             return
                         }
                         weekdaysInputObj[day] = true
@@ -74,7 +75,7 @@ async function parseRemindParams(message, remind, keyValuePairs) {
                     if (remind.date) {
                         let checkWeekdayResult = checkDateWeekdayMatch(remind.date, weekdaysInputArr)
                         if (checkWeekdayResult.error) {
-                            message.channel.send(checkWeekdayResult.error)
+                            sendMessage(message.channel, checkWeekdayResult.error)
                             return
                         }
                     }
@@ -89,18 +90,18 @@ async function parseRemindParams(message, remind, keyValuePairs) {
                 } else {
                     if (valueArr.length!==2) {
                         //should add weekday hint
-                        message.channel.send(`Error: bad repeat value format. Try "<num> <timeUnit>" or "false" to disable`)
+                        sendMessage(message.channel, `Error: bad repeat value format. Try "<num> <timeUnit>" or "false" to disable`)
                         return
                     }
                     let num = Number(valueArr[0])
                     if (isNaN(num) || num%1 || num < 0) {
-                        message.channel.send("Error: invalid number for repeat")
+                        sendMessage(message.channel, "Error: invalid number for repeat")
                         return
                     }
                     let timeUnit = valueArr[1].toLowerCase()
                     const validTimeUnits = ["day", "week", "month", "year"]
                     if (!validTimeUnits.includes(timeUnit)) {
-                        message.channel.send(`Error: "${timeUnit}" is not a valid time unit (${validTimeUnits.join(", ")})`)
+                        sendMessage(message.channel, `Error: "${timeUnit}" is not a valid time unit (${validTimeUnits.join(", ")})`)
                         return
                     }
                     if (!remind.repeat) remind.repeat = {}
@@ -111,7 +112,7 @@ async function parseRemindParams(message, remind, keyValuePairs) {
                 break;
             case "message":
                 if (value.length > 200) {
-                    message.channel.send(`Error: Message is too long (${value.length}/200 characters)`)
+                    sendMessage(message.channel, `Error: Message is too long (${value.length}/200 characters)`)
                     return
                 }
                 remind.message = value
@@ -121,13 +122,13 @@ async function parseRemindParams(message, remind, keyValuePairs) {
                 let newDate = new Date(value)
                 let now = new Date()
                 if (isNaN(newDate.getTime())) {
-                    message.channel.send(
+                    sendMessage(message.channel, 
                         `Error: Couldn't parse new date. Try using military time and this format: ` +
                         `HH:MM MM/DD/YY`
                     )
                     return
                 } else if (newDate < now) {
-                    message.channel.send("Error: New date is in the past")
+                    sendMessage(message.channel, "Error: New date is in the past")
                     return
                 }
                 remind.date = newDate
@@ -136,7 +137,7 @@ async function parseRemindParams(message, remind, keyValuePairs) {
                 if (remind.repeat && remind.repeat.weekdays) {
                     let checkWeekdayResult = checkDateWeekdayMatch(remind.date, remind.repeat.weekdays)
                     if (checkWeekdayResult.error) {
-                        message.channel.send(checkWeekdayResult.error)
+                        sendMessage(message.channel, checkWeekdayResult.error)
                         return
                     }
                 }
@@ -147,7 +148,7 @@ async function parseRemindParams(message, remind, keyValuePairs) {
                 for (let username of usersArrIn) {
                     let user = await findUser(username)
                     if (!user) {
-                        message.channel.send(`Couldn't find user "${username}"`)
+                        sendMessage(message.channel, `Couldn't find user "${username}"`)
                         return
                     }
                     usersArrOut.push(user.id)
@@ -163,7 +164,7 @@ async function parseRemindParams(message, remind, keyValuePairs) {
                     changes.deliver = "DM"
                 } else if (value==="pub") {
                     if (!message.guild) {
-                        message.channel.send(
+                        sendMessage(message.channel, 
                             "Error: To set a reminder to public delivery you must post your command in a public channel"
                         )
                         return
@@ -173,13 +174,13 @@ async function parseRemindParams(message, remind, keyValuePairs) {
                     remind.guildId = message.guild.id
                     changes.deliver = "public"
                 } else {
-                    message.channel.send(`Error: Please set "deliver" to "pub" or "dm"`)
+                    sendMessage(message.channel, `Error: Please set "deliver" to "pub" or "dm"`)
                     return
                 }
         }
     }
     if (!remind.date) {
-        message.channel.send(
+        sendMessage(message.channel, 
             "Error: The reminder must include a date."
         )
         return

@@ -1,4 +1,7 @@
-function roll (params, message) {
+//helpers
+const sendMessage = require('../helpers/sendMessage.js')
+
+async function roll (params, message) {
     function rollDie(sides) { //inclusive
         return Math.floor(Math.random() * sides) + 1
     }
@@ -19,7 +22,7 @@ function roll (params, message) {
         else sendThis = rollDie(numSides)
     }
     
-    message.channel.send(sendThis.toString())
+    await sendMessage(message.channel, sendThis.toString())
 }
 
 module.exports = roll

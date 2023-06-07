@@ -4,6 +4,7 @@ const post = require('../helpers/post.js')
 const sendDm = require('../helpers/sendDm.js')
 const sendReminder = require('../helpers/sendReminder.js')
 const parseRemindParams = require('../helpers/parseRemindParams.js')
+const sendMessage = require('../helpers/sendMessage.js')
 
 //json
 const userIds = require('../json/userIds.json')
@@ -23,7 +24,7 @@ async function editRemind(params, message) {
     let theRemind = reminds[index]
     let authorId = message.author.id
     if (index===null) {
-        message.channel.send(`Failed to find reminder with id: ${remindId}`)
+        sendMessage(message.channel, `Failed to find reminder with id: ${remindId}`)
         return
     }
     let oldWhom = theRemind.whom.slice(0)
@@ -35,7 +36,7 @@ async function editRemind(params, message) {
         let changes = result.changes
         
         let thePost = await post('reminds', reminds)
-        if (!thePost) message.channel.send('Failed to edit reminder.')
+        if (!thePost) sendMessage(message.channel, 'Failed to edit reminder.')
         else {
             if (changes.date) {
                 let now = new Date()
@@ -57,7 +58,7 @@ async function editRemind(params, message) {
                 sendThis += `${key} was changed to: ${changes[key]}; `
             }
             sendThis = sendThis.slice(0, sendThis.length - 2)
-            message.channel.send("Reminder edited. " + sendThis)
+            sendMessage(message.channel, "Reminder edited. " + sendThis)
             if (reminds[index].repeat) { //probably bad practice to pre-notify someone for a reminder they'll receive once
                 for (let userId of reminds[index].whom) {
                     if (userId===message.author.id) continue;
@@ -75,7 +76,7 @@ async function editRemind(params, message) {
             
         }
     } else {
-        message.channel.send(
+        sendMessage(message.channel,
             `You cannot edit reminder with id: ${remindId} since you did ` +
             `not create it. If you would like to removed from this reminder, ` +
             `use the "cancelremind" command.`

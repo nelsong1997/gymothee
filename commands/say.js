@@ -1,5 +1,8 @@
+//json
 const userIds = require('../json/userIds.json')
 const client = require('../client.js')
+
+//helpers
 const sendDm = require('../helpers/sendDm')
 
 async function say (params, message) {
@@ -8,7 +11,7 @@ async function say (params, message) {
         let speech = params.slice(1).join(" ")
         try {
             let channel = await client.channels.fetch(channelString)
-            channel.send(speech)
+            sendMessage(channel, speech)
         } catch (error) {
             sendDm(userIds.gabe, "bad channel id")
         }

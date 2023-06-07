@@ -1,5 +1,7 @@
+//helpers
 const get = require("../helpers/get")
 const post = require("../helpers/post.js")
+const sendMessage = require('../helpers/sendMessage.js')
 
 async function setPrefix(params, message) {
     let guildId = message.guild.id
@@ -10,15 +12,15 @@ async function setPrefix(params, message) {
     let newPrefix = params[0]
 
     if (!newPrefix) {
-        message.channel.send("Could not set prefix: No new prefix specified!")
+        sendMessage(message.channel, "Could not set prefix: No new prefix specified!")
         return
     } else if (oldPrefix===newPrefix) {
-        message.channel.send(`Prefix was already set to ${oldPrefix}!`)
+        sendMessage(message.channel, `Prefix was already set to ${oldPrefix}!`)
         return
     }
     let acceptableChars = "!$%^&"
     if (newPrefix.length > 2) {
-        message.channel.send(`Could not set prefix: Prefixes longer than 2 chars not allowed`)
+        sendMessage(message.channel, `Could not set prefix: Prefixes longer than 2 chars not allowed`)
         return
     } else if (
         !acceptableChars.includes(newPrefix[0]) ||
@@ -27,16 +29,16 @@ async function setPrefix(params, message) {
     ) {
         let charsArray = acceptableChars.split("")
         let charsString = charsArray.join(", ")
-        message.channel.send(`Could not set prefix: Disallowed character used. Acceptable chars: ${charsString}`)
+        sendMessage(message.channel, `Could not set prefix: Disallowed character used. Acceptable chars: ${charsString}`)
         return
     }
     settings.prefix = newPrefix
     let result = await post("settings", settings, guildId)
     if (!result) {
-        message.channel.send("Failed to update settings")
+        sendMessage(message.channel, "Failed to update settings")
         return
     }
-    message.channel.send(`Prefix set to "${newPrefix}"! Now your commands will look like: "${newPrefix}command"`)
+    sendMessage(message.channel, `Prefix set to "${newPrefix}"! Now your commands will look like: "${newPrefix}command"`)
 }
 
 module.exports = setPrefix

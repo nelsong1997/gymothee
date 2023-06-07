@@ -1,7 +1,10 @@
+//client
 const client = require("../client.js")
 
+//helpers
 const get = require("../helpers/get")
 const post = require("../helpers/post")
+const sendMessage = require('../helpers/sendMessage.js')
 
 async function setWelcomeMessage(params, message) {
     let guildId = message.guild.id
@@ -30,11 +33,11 @@ async function setWelcomeMessage(params, message) {
     settings.welcomeMessage = welcomeMessage
     let result = post("settings", settings, guildId)
     if (!result) {
-        message.channel.send("Failed to update settings")
+        sendMessage(message.channel, "Failed to update settings")
         return
     }
-    message.channel.send(sendThis)
-    message.channel.send(welcomeMessage)
+    sendMessage(message.channel, sendThis)
+    sendMessage(message.channel, welcomeMessage)
 }
 
 module.exports = setWelcomeMessage

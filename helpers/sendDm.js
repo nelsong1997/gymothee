@@ -12,8 +12,14 @@ async function sendDm(userId, message) {
         console.log(`intercepted dm while testing to ${userId}: ${message}`)
         return
     }
-    let user = await client.users.fetch(userId)
-    user.send(message)
+
+    let user = await client.users.fetch(userId).catch(
+        error => console.log(`Error sending DM: ${error}`)
+    )
+    
+    user.send(message).catch(
+        error => console.log(`Found user but failed to DM: ${userId}`)
+    )
     //if (userId!==userIds.gabe) sendDm(userIds.gabe, `sent to ${user.username}#${user.discriminator}: ${message}`)
 }
 

@@ -1,5 +1,9 @@
+//helpers
+const sendMessage = require('../helpers/sendMessage.js')
+
 function help (message) {
-    message.channel.send(
+    sendMessage(
+        message.channel,
         `Command list: https://tinyurl.com/gymothee`
     )
 }

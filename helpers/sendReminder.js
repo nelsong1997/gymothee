@@ -4,6 +4,7 @@ const client = require('../client.js')
 const get = require('./get.js')
 const post = require('./post.js')
 const sendDm = require('./sendDm.js')
+const sendMessage = require('./sendMessage.js')
 
 //state
 let state = {
@@ -65,9 +66,8 @@ async function sendReminder(remindId, intentDate, late) {
         let channelId = settings.commandChannelId ? settings.commandChannelId : remind.channelId
         try {
             let theChannel = await client.channels.fetch(channelId)
-            theChannel.send(`${remind.message}${lateMsg} <@${remind.whom.join("> <@")}>`)
+            sendMessage(theChannel, `${remind.message}${lateMsg} <@${remind.whom.join("> <@")}>`)
         } catch (error) {
-            console.log("couldn't find channel (to send reminder) with id: ", channelId)
             sendDm(
                 remind.creator,
                 `Failed to send reminder with id: ${remind.id}. ` +

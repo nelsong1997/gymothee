@@ -1,7 +1,9 @@
+//client
 const client = require('../client.js')
 
 //helpers
 const get = require('../helpers/get.js')
+const sendMessage = require('../helpers/sendMessage.js')
 
 async function viewRemind(params, message) {
     let remindId = params[0]
@@ -25,8 +27,8 @@ async function viewRemind(params, message) {
             }
         }
         if (count===0) {
-            message.channel.send("There are currently no reminders that you have created or that will be sent to you.")
-        } else for (let msg of sendThese) await message.channel.send(msg)
+            sendMessage(message.channel, "There are currently no reminders that you have created or that will be sent to you.")
+        } else for (let msg of sendThese) await sendMessage(message.channel, msg)
         return
     }
 
@@ -40,14 +42,14 @@ async function viewRemind(params, message) {
     let theRemind = reminds[index]
     let authorId = message.author.id
     if (index===null) {
-        message.channel.send(`Failed to find reminder with id: ${remindId}`)
+        sendMessage(message.channel, `Failed to find reminder with id: ${remindId}`)
         return
     } else if (authorId===theRemind.creator) {
-        message.channel.send(await formatRemind(theRemind))
+        sendMessage(message.channel, await formatRemind(theRemind))
     } else if (theRemind.whom.includes(authorId)) {
-        message.channel.send(await formatRemind(theRemind))
+        sendMessage(message.channel, await formatRemind(theRemind))
     } else {
-        message.channel.send(
+        sendMessage(message.channel, 
             `You cannot view reminder with id: ${remindId} since you are ` +
             `not the creator of nor are you included in this reminder.`
         )

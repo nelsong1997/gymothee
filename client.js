@@ -21,7 +21,7 @@ module.exports = client
 //     "commandChannelId": null
 // }
 
-//User IDs
+//User IDs -- define as strings
 // {
 //     "gymothee": ????,
 //     "gabe": ????,
