@@ -71,14 +71,7 @@ async function parseRemindParams(message, remind, keyValuePairs) {
                         }
                         weekdaysInputObj[day] = true
                     }
-                    //make sure remind date is one of the specified weekdays...if it exists
-                    if (remind.date) {
-                        let checkWeekdayResult = checkDateWeekdayMatch(remind.date, weekdaysInputArr)
-                        if (checkWeekdayResult.error) {
-                            sendMessage(message.channel, checkWeekdayResult.error)
-                            return
-                        }
-                    }
+                    
                     //sort
                     weekdaysInputArr.sort((a, b) => validWeekdays.indexOf(a) - validWeekdays.indexOf(b))
                     //erase any possible irrelevant data
@@ -133,14 +126,6 @@ async function parseRemindParams(message, remind, keyValuePairs) {
                 }
                 remind.date = newDate
                 changes.date = newDate.toLocaleString('en-us')
-                //make sure remind date is one of the specified weekdays...if it exists
-                if (remind.repeat && remind.repeat.weekdays) {
-                    let checkWeekdayResult = checkDateWeekdayMatch(remind.date, remind.repeat.weekdays)
-                    if (checkWeekdayResult.error) {
-                        sendMessage(message.channel, checkWeekdayResult.error)
-                        return
-                    }
-                }
                 break;
             case "whom":
                 let usersArrIn = value.split(", ")
@@ -185,6 +170,16 @@ async function parseRemindParams(message, remind, keyValuePairs) {
         )
         return
     }
+
+    //make sure remind date is one of the specified weekdays...if there are weekdays
+    if (remind.repeat && remind.repeat.weekdays) {
+        let checkWeekdayResult = checkDateWeekdayMatch(remind.date, remind.repeat.weekdays)
+        if (checkWeekdayResult.error) {
+            sendMessage(message.channel, checkWeekdayResult.error)
+            return
+        }
+    }
+    
     return { remind: remind, changes: changes }
 }
 
