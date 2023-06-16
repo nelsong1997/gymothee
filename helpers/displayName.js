@@ -27,6 +27,7 @@ async function displayName(userId, guildId) {
             let guild = await client.guilds.fetch(guildId)
             let guildMember = await guild.members.fetch(userId)
             let theNickname = guildMember.nickname ? guildMember.nickname : user.username
+            if (!guildMember.nickname) console.log(guildMember)
             return `**${theNickname}**`
         case "full": return `**${user.username}**#${user.discriminator}`
         case "id": return userId

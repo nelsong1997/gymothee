@@ -1,8 +1,4 @@
-//client
-const client = require('../client.js')
-
 //helpers
-const get = require('../helpers/get.js')
 const sendDm = require('./sendDm.js')
 
 //json
@@ -19,7 +15,6 @@ async function sendMessage(channel, messageText, recursive) {
     async function handleError(error) {
         // we get an error while trying to send error message => give up
         if (recursive) {
-            console.log(userIds.gabe)
             await sendDm(
                 userIds.gabe,
                 `Error occurred while trying to send message\n${JSON.stringify(error)}`
