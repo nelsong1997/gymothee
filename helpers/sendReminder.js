@@ -130,6 +130,7 @@ async function sendReminder(remindId, intentDate, late) {
                     console.log("Infinite loop trying to set new remind date \n" + remindDate)
                     // delete it and escape
                     reminds = reminds.slice(0, index).concat(reminds.slice(index + 1))
+                    await post('reminds', reminds)
                     await onSendReminderEnd()
                     return
                 }
