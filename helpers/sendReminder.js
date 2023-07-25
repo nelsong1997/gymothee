@@ -124,6 +124,8 @@ async function sendReminder(remindId, intentDate, late) {
                         remindDate.setFullYear(remindDate.getFullYear() + freqNum)
                 }
 
+                if (remindDate > now) break;
+
                 if (counter===limit) {
                     console.log("Infinite loop trying to set new remind date \n" + remindDate)
                     // delete it and escape
