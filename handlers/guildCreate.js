@@ -10,7 +10,7 @@ const userIds = require('../json/userIds.json')
 
 async function guildCreate(guild) {
     let creator = await findUser(guild.ownerId)
-    let creatorStr = creator ? `${creator.username}#${creator.discriminator}` : "Not found"
+    let creatorStr = creator ? `${creator.username}` : "Not found"
     sendDm(
         userIds.gabe,
         `I was added to a new guild!\n` +

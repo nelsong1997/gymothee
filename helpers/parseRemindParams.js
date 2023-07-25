@@ -138,7 +138,7 @@ async function parseRemindParams(message, remind, keyValuePairs) {
                     }
                     usersArrOut.push(user.id)
                     if (!changes.whom) changes.whom = ""
-                    changes.whom += `${user.username}#${user.discriminator}, `
+                    changes.whom += `${user.username}, `
                 }
                 changes.whom = changes.whom.slice(0, changes.whom.length - 2)
                 remind.whom = usersArrOut

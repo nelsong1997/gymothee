@@ -8,14 +8,15 @@ async function findUser(str) {
         } catch (error) {
             return null
         }
-    } else if (str.includes("#")) {
+    } else {
         let id = null;
         for (let guild of client.guilds.cache) {
             if (id) break;
             let guildMembers = await guild[1].members.fetch()
             for (let mem of guildMembers) {
                 let member = mem[1]
-                let fullName = `${member.user.username}#${member.user.discriminator}`.toLowerCase()
+                let fullName = `${member.user.username}`.toLowerCase()
+                if (str.includes('#')) fullName += `${member.user.discriminator}`
                 if (fullName===str.toLowerCase()) {
                     id = member.user.id
                     break;

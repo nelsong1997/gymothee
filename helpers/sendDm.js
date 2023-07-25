@@ -20,7 +20,7 @@ async function sendDm(userId, message) {
     user.send(message).catch(
         error => console.log(`Found user but failed to DM: ${userId}`)
     )
-    //if (userId!==userIds.gabe) sendDm(userIds.gabe, `sent to ${user.username}#${user.discriminator}: ${message}`)
+    //if (userId!==userIds.gabe) sendDm(userIds.gabe, `sent to ${user.username}: ${message}`)
 }
 
 module.exports = sendDm

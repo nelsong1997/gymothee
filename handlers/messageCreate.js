@@ -49,7 +49,7 @@ async function messageCreate(message) {
         //fwd to me if it's a dm, not command, and im not the author
         //incorrectly entered commands (anything starting with prefix) will not fwd to me
         sendMessage(message.channel, "Your message has been forwarded")
-        sendDm(userIds.gabe, `${message.author.username}#${message.author.discriminator} said to me: ${message.content}`)
+        sendDm(userIds.gabe, `${message.author.username} said to me: ${message.content}`)
         return
     }
 

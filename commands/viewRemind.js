@@ -61,7 +61,7 @@ async function formatRemind(remindObj) {
     for (let userId of remindObj.whom) {
         try {
             let user = await client.users.fetch(userId)
-            whomArr.push(user.username + "#" + user.discriminator)
+            whomArr.push(user.username)
         } catch (err) {
             console.log("failed to find user with id " + userId)
             whomArr.push("Unknown user")

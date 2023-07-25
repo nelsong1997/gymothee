@@ -72,7 +72,7 @@ async function remind(params, message) {
         let result = await parseRemindParams(message, newRemind, keyValuePairs)
         if (!result) return //errors should be sent from the func above
         newRemind = result.remind
-        whomStr = result.changes.whom || message.author.username + "#" + message.author.discriminator
+        whomStr = result.changes.whom || message.author.username
     } else {
         sendMessage(message.channel, "Failed to parse your reminder command.")
         return
@@ -120,7 +120,7 @@ async function remind(params, message) {
                 sendDm(
                     userId,
                     `Reminder with id: ${remindId} was created by user: ` +
-                    `${message.author.username}#${message.author.discriminator} ` +
+                    `${message.author.username} ` +
                     `with message: "${newRemind.message}". ` +
                     `This reminder will send on ` +
                     `${newRemind.date.toLocaleString('en-us')}` +
@@ -405,13 +405,12 @@ async function parseMsgAndRecips(str, message) {
         whomUserIds = []
         for (let [key, user] of message.mentions.users) {
             whomUserIds.push(user.id)
-            whomUsernamesArr.push(user.username + "#" + user.discriminator)
+            whomUsernamesArr.push(user.username)
         }
         whomStr = whomUsernamesArr.join(", ")
     } else if (recips) {
         whomUserIds = []
         let recipUsersArr = recips.split(", ")
-        //for now only handle id or name#discriminator
         for (let user of recipUsersArr) {
             if (!user.startsWith("@")) {
                 sendMessage(message.channel, "Error: couldn't parse recipients")
@@ -423,11 +422,11 @@ async function parseMsgAndRecips(str, message) {
                 return
             }
             whomUserIds.push(theUser.id)
-            whomUsernamesArr.push(theUser.username + "#" + theUser.discriminator)
+            whomUsernamesArr.push(theUser.username)
         }
         whomStr = whomUsernamesArr.join(", ")
     } else {
-        whomStr = message.author.username + "#" + message.author.discriminator
+        whomStr = message.author.username
         //newRemind.whom initializes as just the author
     }
 

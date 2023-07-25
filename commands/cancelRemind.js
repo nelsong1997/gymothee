@@ -43,7 +43,7 @@ async function cancelRemind(params, message) {
                 //someone removing themselves should notify creator
                 sendDm(
                     theRemind.creator,
-                    `User: ${message.author.username}#${message.author.discriminator} ` +
+                    `User: ${message.author.username} ` +
                     `removed themselves from your reminder with id: ${remindId}. ` +
                     `Since this was the only user in your reminder, the reminder was deleted.`
                 )
@@ -59,7 +59,7 @@ async function cancelRemind(params, message) {
                 //someone removing themselves should notify creator
                 sendDm(
                     theRemind.creator,
-                    `User: ${message.author.username}#${message.author.discriminator} ` +
+                    `User: ${message.author.username} ` +
                     `removed themselves from your reminder with id: ${remindId}. `
                 )
             } else {
