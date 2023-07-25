@@ -1,7 +1,19 @@
 const Discord = require('discord.js');
 const config = require('./json/config.json');
 
-const client = new Discord.Client( {intents: ["GUILD_MEMBERS", "GUILD_MESSAGES", "GUILDS", "DIRECT_MESSAGES", "GUILD_VOICE_STATES"], partials: ["CHANNEL"]} );
+const client = new Discord.Client(
+    {
+        intents: [
+            "GUILD_MEMBERS",
+            "GUILD_MESSAGES",
+            "GUILDS",
+            "DIRECT_MESSAGES",
+            "GUILD_VOICE_STATES",
+            "GUILD_PRESENCES"
+        ],
+        partials: ["CHANNEL"]
+    }
+)
 
 client.login(config.BOT_TOKEN);
 

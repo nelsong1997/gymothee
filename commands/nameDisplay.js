@@ -28,7 +28,7 @@ async function nameDisplay(params, message) {
     } else if (newNameDisplay===settings.nameDisplay) {
         sendMessage(message.channel, `Name display mode was already "${settings.nameDisplay}"!`)
         return
-    } else if (["username", "nickname", "full", "id"].includes(newNameDisplay)) {
+    } else if (["username", "nickname", "id"].includes(newNameDisplay)) {
         settings.nameDisplay = newNameDisplay
         let result = await post("settings", settings, guildId)
         if (!result) {
@@ -37,7 +37,7 @@ async function nameDisplay(params, message) {
         }
         sendMessage(message.channel, `Names will now display like: ${await displayName(message.author.id, guildId)}`)
     } else {
-        sendMessage(message.channel, `Invalid name display mode: ${newNameDisplay}`)
+        sendMessage(message.channel, `Invalid name display mode: ${newNameDisplay}. Use "username", "nickname", or "id"`)
         return
     }
 }

@@ -106,19 +106,33 @@ async function sendReminder(remindId, intentDate, late) {
             //     weekdays: null,
             //     dayOfMonth: null
             // }
-            switch (remind.repeat.freqTimeUnit) {
-                case "day":
-                    remindDate.setDate(remindDate.getDate() + freqNum)
-                    break;
-                case "week":
-                    remindDate.setDate(remindDate.getDate() + 7 * freqNum)
-                    break;
-                case "month":
-                    remindDate.setMonth(remindDate.getMonth() + freqNum)
-                    break;
-                case "year":
-                    remindDate.setFullYear(remindDate.getFullYear() + freqNum)
+
+            const limit = 999
+
+            for (let counter = 0; counter <= limit; counter++) {
+                switch (remind.repeat.freqTimeUnit) {
+                    case "day":
+                        remindDate.setDate(remindDate.getDate() + freqNum)
+                        break;
+                    case "week":
+                        remindDate.setDate(remindDate.getDate() + 7 * freqNum)
+                        break;
+                    case "month":
+                        remindDate.setMonth(remindDate.getMonth() + freqNum)
+                        break;
+                    case "year":
+                        remindDate.setFullYear(remindDate.getFullYear() + freqNum)
+                }
+
+                if (counter===limit) {
+                    console.log("Infinite loop trying to set new remind date \n" + remindDate)
+                    // delete it and escape
+                    reminds = reminds.slice(0, index).concat(reminds.slice(index + 1))
+                    await onSendReminderEnd()
+                    return
+                }
             }
+            
         }
         remind.date = remindDate
 
@@ -126,8 +140,6 @@ async function sendReminder(remindId, intentDate, late) {
         //and then it needs to send another one the same day
         //copied and modified from handlers/ready.js
 
-        //need to refactor this for the case that the bot has been offline for a very long time
-        //needs to keep adding time intervals to the reminder date until the date is after now
         let nextMidnight = new Date()
         nextMidnight.setDate(nextMidnight.getDate() + 1)
         nextMidnight.setHours(0, 0, 0, 0)

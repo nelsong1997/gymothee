@@ -1,9 +1,18 @@
+const { 
+    joinVoiceChannel,
+    createAudioPlayer,
+    createAudioResource,
+    AudioPlayerStatus,
+    getVoiceConnection,
+    VoiceConnectionStatus
+} = require('@discordjs/voice');
+
 //helpers
 const get = require('../helpers/get.js')
 const sendReminder = require('../helpers/sendReminder.js')
 
 //client
-//const client = require('../client.js')
+const client = require('../client.js')
 
 async function ready() {
     // console.log(`did enter ready function ${new Date().toTimeString()}`)
@@ -11,6 +20,7 @@ async function ready() {
     dailySetRemindTimeouts()
 
     async function dailySetRemindTimeouts() {
+
         //first decide when to run again (next midnight)
         let now = new Date()
         // console.log(`did enter daily function ${now.toLocaleString('en-us')}`)
@@ -40,6 +50,58 @@ async function ready() {
                 // console.log(`did set timeout for reminder with id: ${remind.id}`)
             }
         }
+
+        //test()
+    }
+}
+
+async function test() {
+
+    // disconnect
+    const initConnection = getVoiceConnection("...");
+    if (initConnection) initConnection.destroy()
+
+    // join channel
+    let channel = await client.channels.fetch("...")
+    const connection = joinVoiceChannel({
+        channelId: "...",
+        guildId: "...",
+        adapterCreator: channel.guild.voiceAdapterCreator,
+    });
+
+    connection.on(VoiceConnectionStatus.Ready, () => {
+        console.log('The connection has entered the Ready state - ready to play audio!');
+        playAudio()
+    });
+
+    function playAudio() {
+        const player = createAudioPlayer();
+
+        player.on('error', error => {
+            console.error(`Error: ${error.message} with resource ${error.resource.metadata.title}`);
+            //player.play(getNextResource());
+        });
+
+        player.on(AudioPlayerStatus.Playing, () => {
+            console.log('The audio player has started playing!');
+        });
+
+        player.on(AudioPlayerStatus.Idle, () => {
+            console.log("idle")
+            connection.destroy()
+        });
+
+        player.on(AudioPlayerStatus.Buffering, () => {
+            console.log("buffering")
+        });
+
+        player.on(AudioPlayerStatus.AutoPaused, () => {
+            console.log("auto pause")
+        });
+
+        const resource = createAudioResource('./easy.mp3');
+        connection.subscribe(player)
+        player.play(resource)
     }
 }
 
