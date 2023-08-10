@@ -1,17 +1,17 @@
-const Discord = require('discord.js');
+const { Client, GatewayIntentBits, Partials } = require('discord.js');
 const config = require('./json/config.json');
 
-const client = new Discord.Client(
+const client = new Client (
     {
         intents: [
-            "GUILD_MEMBERS",
-            "GUILD_MESSAGES",
-            "GUILDS",
-            "DIRECT_MESSAGES",
-            "GUILD_VOICE_STATES",
-            "GUILD_PRESENCES"
+            GatewayIntentBits.GuildMembers,
+            GatewayIntentBits.GuildMessages,
+            GatewayIntentBits.Guilds,
+            GatewayIntentBits.DirectMessages,
+            GatewayIntentBits.GuildVoiceStates,
+            GatewayIntentBits.GuildPresences
         ],
-        partials: ["CHANNEL"]
+        partials: [Partials.Channel]
     }
 )
 

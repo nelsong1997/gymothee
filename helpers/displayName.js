@@ -31,7 +31,7 @@ async function displayName(userId, guildId) {
             } catch (error) {
                 return `**${user.username}**`
             }
-            let theNickname = guildMember.nickname ? guildMember.nickname : user.username
+            let theNickname = guildMember.nickname ? guildMember.nickname : guildMember.displayName
             return `**${theNickname}**`
         case "id": return userId
         default: return userId
