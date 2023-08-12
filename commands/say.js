@@ -3,7 +3,8 @@ const userIds = require('../json/userIds.json')
 const client = require('../client.js')
 
 //helpers
-const sendDm = require('../helpers/sendDm')
+const sendDm = require('../helpers/sendDm.js')
+const sendMessage = require('../helpers/sendMessage.js')
 
 async function say (params, message) {
     if (message.guild===null && message.author.id===userIds.gabe) {
