@@ -80,24 +80,45 @@ async function sendReminder(remindId, intentDate, late) {
         if (remind.repeat.weekdays) {
             const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
             let nowDayIndex = now.getDay()
-            let oldRemindDayIndex = remindDate.getDay()
             let nextWeekdayIndex = null
+            let daysDiff = null
+
+            // find next weekday that we are reminding on
             //remind.repeat.weekdays is sorted
             for (let remindDay of remind.repeat.weekdays) {
                 let remindDOWIndex = weekdays.indexOf(remindDay)
-                if (nowDayIndex <= remindDOWIndex && oldRemindDayIndex < remindDOWIndex) {
+                if (nowDayIndex <= remindDOWIndex) {
+                    if (nowDayIndex===remindDOWIndex) {
+                        // compare current time vs remind time irrespective of date
+                        let oldRemindTime = remindDate
+                        oldRemindTime.setFullYear(2000)
+                        oldRemindTime.setMonth(0)
+                        oldRemindTime.setDate(1)
+                        let nowTime = new Date()
+                        nowTime.setFullYear(2000)
+                        nowTime.setMonth(0)
+                        nowTime.setDate(1)
+                        // if the remind time has already passed, the next remind weekday cannot be today
+                        if (nowTime > oldRemindTime) continue;
+                    }
+
                     nextWeekdayIndex = remindDOWIndex
-                    let daysDiff = nextWeekdayIndex - nowDayIndex
-                    remindDate.setDate(now.getDate() + daysDiff)
+                    daysDiff = nextWeekdayIndex - nowDayIndex
                     break;
                 }
             }
+
             //use the first day next week if there is nothing left this week
             if (!nextWeekdayIndex) {
-                let nextWeekdayIndex = weekdays.indexOf(remind.repeat.weekdays[0])
-                let daysDiff = nextWeekdayIndex - nowDayIndex + 7
-                remindDate.setDate(now.getDate() + daysDiff)
+                nextWeekdayIndex = weekdays.indexOf(remind.repeat.weekdays[0])
+                daysDiff = nextWeekdayIndex - nowDayIndex + 7
             }
+
+            remindDate.setFullYear(now.getFullYear())
+            remindDate.setMonth(now.getMonth())
+            remindDate.setDate(now.getDate() + daysDiff)
+            
+        // repeat regular intervals
         } else {
             let freqNum = remind.repeat.freqNum
             // {
