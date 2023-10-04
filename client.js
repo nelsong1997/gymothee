@@ -10,9 +10,10 @@ const client = new Client (
             GatewayIntentBits.Guilds,
             GatewayIntentBits.DirectMessages,
             GatewayIntentBits.GuildVoiceStates,
-            GatewayIntentBits.GuildPresences
+            GatewayIntentBits.GuildPresences,
+            GatewayIntentBits.GuildMessageReactions
         ],
-        partials: [Partials.Channel]
+        partials: [Partials.Channel, Partials.Message, Partials.Reaction]
     }
 )
 
