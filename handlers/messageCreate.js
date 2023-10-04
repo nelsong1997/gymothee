@@ -25,6 +25,7 @@ const cancelRemind = require('../commands/cancelRemind.js')
 const viewRemind = require('../commands/viewRemind.js')
 const editRemind = require('../commands/editRemind.js')
 const nameDisplay = require('../commands/nameDisplay.js')
+const setRulesMessage = require('../commands/setRulesMessage.js')
 
 async function messageCreate(message) {
     if (message.author.bot) return;
@@ -127,6 +128,9 @@ async function messageCreate(message) {
                 return
             case "setwelcomechannel":
                 setWelcomeChannel(message)
+                return
+            case "setrulesmessage":
+                setRulesMessage(message)
                 return
         }
     }

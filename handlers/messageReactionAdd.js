@@ -1,5 +1,9 @@
-//client
+// client
 const client = require('../client.js')
+
+// helpers
+const get = require('../helpers/get.js')
+const post = require('../helpers/post.js')
 
 async function messageReactionAdd(messageReaction, user) {
     let rules = await get("rules", messageReaction.message.guildId)
@@ -16,20 +20,20 @@ async function messageReactionAdd(messageReaction, user) {
             reactToMsg.delete()
             let commandMsg = client.messages.get(rules.commandMsg)
             commandMsg.delete()
+            rules.reactToMsg = null
+            rules.commandMsg = null
         } catch (error) {
             console.log("couldn't delete messages")
         }
-        rules.reactToMsg = null
-        rules.commandMsg = null
-        rules.agreeEmoji = messageReaction._emoji.name
-        await post("rules", messageReaction.message.guildId)
+        rules.agreeEmojiId = messageReaction._emoji.name.codePointAt()
+        await post("rules", rules, messageReaction.message.guildId)
 
     // agree to rules
     } else if (rules.agreeEmoji &&
-      messageReaction._emoji.name === rules.agreeEmoji && 
+      messageReaction._emoji.name.codePointAt() === rules.agreeEmojiId && 
       messageReaction.message.id === rules.rulesMsg) {
-        // assign role etc
-    } else return
+        // assign roles etc
+    }
 }
 
 module.exports = messageReactionAdd
