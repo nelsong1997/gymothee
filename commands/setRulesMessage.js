@@ -27,7 +27,8 @@ async function setRulesMessage(message) {
         commandMsg: message.id,
         isSettingRules: true,
         rulesMsg: message.reference.messageId,
-        roleId: role.id
+        roleId: role.id,
+        channelId: message.channel.id
     }
 
     await post("rules", rules, message.guild.id)

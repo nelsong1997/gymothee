@@ -15,24 +15,31 @@ async function messageReactionAdd(messageReaction, user) {
     // set emoji
     if (rules.isSettingRules && messageReaction.message.id === rules.reactToMsg) {
         rules.isSettingRules = false
+        const errMsg = "failed to delete messages while setting rules message"
         try {
-            let reactToMsg = client.messages.get(rules.reactToMsg)
-            reactToMsg.delete()
-            let commandMsg = client.messages.get(rules.commandMsg)
-            commandMsg.delete()
+            let channel = await client.channels.fetch(rules.channelId)
+            let reactToMsg = await channel.messages.fetch(rules.reactToMsg)
+            reactToMsg.delete().catch(() => console.log(errMsg))
+            let commandMsg = await channel.messages.fetch(rules.commandMsg)
+            commandMsg.delete().catch(() => console.log(errMsg))
             rules.reactToMsg = null
             rules.commandMsg = null
         } catch (error) {
-            console.log("couldn't delete messages")
+            console.log(errMsg)
         }
         rules.agreeEmojiId = messageReaction._emoji.name.codePointAt()
         await post("rules", rules, messageReaction.message.guildId)
 
     // agree to rules
-    } else if (rules.agreeEmoji &&
+    } else if (rules.agreeEmojiId &&
       messageReaction._emoji.name.codePointAt() === rules.agreeEmojiId && 
       messageReaction.message.id === rules.rulesMsg) {
-        // assign roles etc
+        let guildMember = await messageReaction.message.guild.members.fetch(user.id)
+        guildMember.roles.add(rules.roleId).catch(()=>{
+            messageReaction.message.channel.send(
+                `Error: Missing permissions to assign "rule agreers" role.`
+            )
+        })
     }
 }
 
