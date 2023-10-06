@@ -13,7 +13,7 @@ app.get('/get', (request, response) => {
     } else {
 		fs.readFile(`./json/${what}/${guildId}.json`, (err, data) => {
 			if (err && (err.errno===-4058 || err.errno===-2)) { //no such file or directory; win || linux
-				let writeThis = ""
+				let writeThis = "{}"
 				if (what==="settings") writeThis = JSON.stringify(defaultSettings)
 				fs.writeFile(`./json/${what}/${guildId}.json`, writeThis, function(error) { //create new file
 					if (error) {
@@ -24,9 +24,13 @@ app.get('/get', (request, response) => {
 			} else if (err) { //unpredicted error
 				console.log("bad get", err)
 				return
-			} else { //if the log file already exists
-				const json = JSON.parse(data);
-				response.type('json').send(json)
+			} else { //if the file already exists
+				try {
+					const json = JSON.parse(data);
+					response.type('json').send(json)
+				} catch (error) {
+					console.log("json parse error: " + error.toString())
+				}
 			}
 		})
 	}
