@@ -13,6 +13,7 @@ const voiceStateUpdate = require('./handlers/voiceStateUpdate.js')
 const guildMemberAdd = require('./handlers/guildMemberAdd.js')
 const guildCreate = require('./handlers/guildCreate.js')
 const messageReactionAdd = require('./handlers/messageReactionAdd.js')
+const messageReactionRemove = require('./handlers/messageReactionRemove.js')
 
 client.on("ready", () => ready())
 
@@ -25,3 +26,5 @@ client.on("guildMemberAdd", (member) => guildMemberAdd(member))
 client.on("guildCreate", (guild) => guildCreate(guild))
 
 client.on("messageReactionAdd", (messageReaction, user) => messageReactionAdd(messageReaction, user))
+
+client.on("messageReactionRemove", (messageReaction, user) => messageReactionRemove(messageReaction, user))
