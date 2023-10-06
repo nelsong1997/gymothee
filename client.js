@@ -23,7 +23,7 @@ module.exports = client
 
 //add folder json
 //add files config.json, defaultSettings.json, reminds.json (empty arr), userIds.json
-//add empty sub-folders settings, voiceLogs
+//add empty sub-folders settings, rules
 
 //default settings
 // {
@@ -32,7 +32,8 @@ module.exports = client
 //     "logChannelId": null,
 //     "welcomeMessage": null,
 //     "welcomeChannelId": null,
-//     "commandChannelId": null
+//     "commandChannelId": null,
+//     "commandSecurity": false
 // }
 
 //User IDs -- define as strings

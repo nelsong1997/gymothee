@@ -26,6 +26,8 @@ const viewRemind = require('../commands/viewRemind.js')
 const editRemind = require('../commands/editRemind.js')
 const nameDisplay = require('../commands/nameDisplay.js')
 const setRulesMessage = require('../commands/setRulesMessage.js')
+const enableCommandSecurity = require('../commands/enableCommandSecurity.js')
+const disableCommandSecurity = require('../commands/disableCommandSecurity.js')
 
 async function messageCreate(message) {
     if (message.author.bot) return;
@@ -46,7 +48,8 @@ async function messageCreate(message) {
         sendMessage(message.channel, `my prefix here is ${prefix} (try ${prefix}help)`)
     }
 
-    if (message.guild===null && message.author.id!==userIds.gabe && !message.content.startsWith(prefix)) {
+    const authorId = message.author.id
+    if (message.guild===null && authorId!==userIds.gabe && !message.content.startsWith(prefix)) {
         //fwd to me if it's a dm, not command, and im not the author
         //incorrectly entered commands (anything starting with prefix) will not fwd to me
         sendMessage(message.channel, "Your message has been forwarded")
@@ -59,13 +62,13 @@ async function messageCreate(message) {
 
     //commands
     let messageArray = message.content.slice(1).split(" ")
-    let command = messageArray[0].toLowerCase()
+    const command = messageArray[0].toLowerCase()
     let params = messageArray.slice(1)
 
-    if (
-        !settings.commandChannelId || //there is no command channel OR this is a DM OR
-        settings.commandChannelId===message.channel.id //we're in the command channel
-    ) {
+    const isDM = !message.guild
+    const inCmdChannel = !settings.commandChannelId || settings.commandChannelId===message.channel.id
+
+    if (isDM || inCmdChannel) {
         switch (command) {
             case "say":
                 say(params, message)
@@ -91,14 +94,24 @@ async function messageCreate(message) {
             case "editremind":
                 editRemind(params, message)
                 return
-      }
+        }
     }
 
-    if (
-        message.guild && //NOT a DM AND
-        (settings.commandChannelId===message.channel.id ||
-        !settings.commandChannelId)
-    ) { //must be in command channel or there is no command channel
+    if (isDM) return
+
+    // check command security
+    if (settings.cmdSecurity) {
+        try {
+            let guildMember = await message.guild.members.fetch(authorId)
+            let role = await guildMember.roles.cache.find(r => r.name === "gymothee admin")
+            if (!role && authorId!==userIds.gabe) return
+        } catch(error) {
+            console.log("error checking cmd security")
+            return
+        }
+    }
+
+    if (inCmdChannel) {
         switch (command) {
             case "setprefix":
                 setPrefix(params, message)
@@ -115,10 +128,14 @@ async function messageCreate(message) {
             case "unsetwelcomemessage":
                 unsetWelcomeMessage(message)
                 return
+            case "enablecommandsecurity":
+                enableCommandSecurity(message)
+                return
+            case "disablecommandsecurity":
+                disableCommandSecurity(message)
+                return
         }
-    }
-
-    if (message.guild) { //valid outside command channel but must not be dm
+    } else {
         switch (command) {
             case "setcommandchannel":
                 setCommandChannel(message)

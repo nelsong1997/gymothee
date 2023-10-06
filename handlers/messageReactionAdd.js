@@ -4,6 +4,7 @@ const client = require('../client.js')
 // helpers
 const get = require('../helpers/get.js')
 const post = require('../helpers/post.js')
+const sendMessage = require('../helpers/sendMessage.js')
 
 async function messageReactionAdd(messageReaction, user) {
     let rules = await get("rules", messageReaction.message.guildId)
@@ -36,7 +37,7 @@ async function messageReactionAdd(messageReaction, user) {
       messageReaction.message.id === rules.rulesMsg) {
         let guildMember = await messageReaction.message.guild.members.fetch(user.id)
         guildMember.roles.add(rules.roleId).catch(()=>{
-            messageReaction.message.channel.send(
+            sendMessage(messageReaction.message.channel,
                 `Error: Missing permissions to assign "rule agreers" role.`
             )
         })

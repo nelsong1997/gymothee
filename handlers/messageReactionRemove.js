@@ -1,5 +1,6 @@
 // helpers
 const get = require('../helpers/get.js')
+const sendMessage = require('../helpers/sendMessage.js')
 
 async function messageReactionRemove(messageReaction, user) {
     let rules = await get("rules", messageReaction.message.guildId)
@@ -13,7 +14,7 @@ async function messageReactionRemove(messageReaction, user) {
       messageReaction.message.id === rules.rulesMsg) {
         let guildMember = await messageReaction.message.guild.members.fetch(user.id)
         guildMember.roles.remove(rules.roleId).catch(()=>{
-            messageReaction.message.channel.send(
+            sendMessage(messageReaction.message.channel,
                 `Error: Missing permissions to remove "rule agreers" role.`
             )
         })
