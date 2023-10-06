@@ -135,21 +135,21 @@ async function messageCreate(message) {
                 disableCommandSecurity(message)
                 return
         }
-    } else {
-        switch (command) {
-            case "setcommandchannel":
-                setCommandChannel(message)
-                return
-            case "unsetcommandchannel":
-                unsetCommandChannel(message)
-                return
-            case "setwelcomechannel":
-                setWelcomeChannel(message)
-                return
-            case "setrulesmessage":
-                setRulesMessage(message)
-                return
-        }
+    }
+
+    switch (command) {
+        case "setcommandchannel":
+            setCommandChannel(message)
+            return
+        case "unsetcommandchannel":
+            unsetCommandChannel(message)
+            return
+        case "setwelcomechannel":
+            setWelcomeChannel(message)
+            return
+        case "setrulesmessage":
+            setRulesMessage(message)
+            return
     }
 }
 
