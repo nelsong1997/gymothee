@@ -26,8 +26,7 @@ const viewRemind = require('../commands/viewRemind.js')
 const editRemind = require('../commands/editRemind.js')
 const nameDisplay = require('../commands/nameDisplay.js')
 const setRulesMessage = require('../commands/setRulesMessage.js')
-const enableCommandSecurity = require('../commands/enableCommandSecurity.js')
-const disableCommandSecurity = require('../commands/disableCommandSecurity.js')
+const commandSecurity = require('../commands/commandSecurity.js')
 
 async function messageCreate(message) {
     if (message.author.bot) return;
@@ -128,11 +127,8 @@ async function messageCreate(message) {
             case "unsetwelcomemessage":
                 unsetWelcomeMessage(message)
                 return
-            case "enablecommandsecurity":
-                enableCommandSecurity(message)
-                return
-            case "disablecommandsecurity":
-                disableCommandSecurity(message)
+            case "commandsecurity":
+                commandSecurity(params, message)
                 return
         }
     }
