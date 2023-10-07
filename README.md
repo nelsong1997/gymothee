@@ -1,6 +1,8 @@
-## Gymotheé is a multi-purpose [Discord](https://discord.com) bot. [Click here](https://discord.com/api/oauth2/authorize?client_id=752210634858561646&permissions=8&scope=bot) to add Gymotheé to your server!
+Gymotheé is a multi-purpose [Discord](https://discord.com) bot. [Click here](https://discord.com/api/oauth2/authorize?client_id=752210634858561646&permissions=8&scope=bot) to add Gymotheé to your server!
 
 To use Gymotheé, you must enter commands. See the list of commands below to get started.
+
+# Commands
 
 ## Setup Commands
 These commands are generally "one-time use" for setting up the bot for your server.
