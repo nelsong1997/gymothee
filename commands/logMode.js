@@ -12,29 +12,25 @@ async function logMode(params, message) {
     }
     let newLogMode = params[0]
 
-    //now we'll always try to update and send sendThis
     let sendThis = ""
+    let doPost = false
     if (!newLogMode) {
-        sendMessage(message.channel, `Current log mode: ${settings.logMode}`)
-        return
+        sendThis = `Current log mode: ${settings.logMode}`
     } else if (newLogMode===settings.logMode) {
-        sendMessage(message.channel, `Log mode was already ${settings.logMode}!`)
-        return
-    } else if (newLogMode==="off") {
-        sendThis = "Voice logging disabled."
-    } else if (newLogMode==="on") {
-        sendThis = `Voice logging enabled. Logs will be posted in the chat areas of voice channels.`
+        sendThis = `Log mode was already ${settings.logMode}!`
+    } else if (["passive", "live", "off"].includes(newLogMode)) {
+        doPost = true
+        sendThis = `Log mode set to: ${newLogMode}`
     } else {
-        sendMessage(message.channel, `Invalid log mode: ${newLogMode}`)
-        return
+        sendThis = `Invalid log mode: ${newLogMode}`
+    }
+    
+    if (doPost) {
+        settings.logMode = newLogMode
+        let result = await post("settings", settings, guildId)
+        if (!result) sendThis = "Failed to update log mode"
     }
 
-    settings.logMode = newLogMode
-    let result = await post("settings", settings, guildId)
-    if (!result) {
-        sendMessage(message.channel, "Failed to update log mode")
-        return
-    }
     sendMessage(message.channel, sendThis)
 }
 

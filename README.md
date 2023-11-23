@@ -19,9 +19,15 @@ Use this command to set which channel you will use to send commands to the bot. 
 
 Un-sets the command channel (see previous entry).
 
-`!logmode [on/off]`
+`!logmode [live/passive/off]`
 
-Turn voice logging on or off, or when used with no parameters, view the current log mode. When voice logging is on, the bot will send a message in the text area of voice channels when a user leaves or joins.
+Set voice logging mode, or when used with no parameters, view the current log mode.
+
+Live: A message will be posted in the voice channel when someone leaves or joins.
+
+Passive: The bot will passively record when people leave and join. Use command `!voicelogs` to view (see separate entry for `!voicelogs` command).
+
+Off: Voice logs will not be recorded.
 
 `!namedisplay [option]`
 
@@ -73,6 +79,10 @@ Roll some number of dice. Each die you roll, separated by spaces, is represented
 `!help`
 
 Provides a link to this repository!
+
+`!voicelogs`
+
+If `logmode` is set to `passive` (see separate entry for `!logmode` command), view all voice logs in this voice channel from the last five minutes *and* the five most recent voice logs in the last 24 hours. In other words, if no one has left or joined recently, you can still see the five most recent entries in the last 24 hours. Also, if a bunch of people left and joined recently, you can still see *everything* that happened in the last five minutes. **Can only be used in the text part of a voice channel.**
 
 ## Reminder Commands
 

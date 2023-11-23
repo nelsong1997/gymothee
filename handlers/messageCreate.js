@@ -27,6 +27,7 @@ const editRemind = require('../commands/editRemind.js')
 const nameDisplay = require('../commands/nameDisplay.js')
 const setRulesMessage = require('../commands/setRulesMessage.js')
 const commandSecurity = require('../commands/commandSecurity.js')
+const voiceLogs = require('../commands/voiceLogs.js')
 
 async function messageCreate(message) {
     if (message.author.bot) return;
@@ -97,6 +98,12 @@ async function messageCreate(message) {
     }
 
     if (isDM) return
+
+    switch (command) {
+        case "voicelogs":
+            voiceLogs(message)
+            return
+    }
 
     // check command security
     if (settings.cmdSecurity) {

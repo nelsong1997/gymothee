@@ -13,8 +13,10 @@ app.get('/get', (request, response) => {
     } else {
 		fs.readFile(`./json/${what}/${guildId}.json`, (err, data) => {
 			if (err && (err.errno===-4058 || err.errno===-2)) { //no such file or directory; win || linux
-				let writeThis = "{}"
+				let writeThis = ""
 				if (what==="settings") writeThis = JSON.stringify(defaultSettings)
+				else if (what==="voicelogs") writeThis = "[]"
+				else writeThis = "{}"
 				fs.writeFile(`./json/${what}/${guildId}.json`, writeThis, function(error) { //create new file
 					if (error) {
 						console.log("bad post (1)", error)
