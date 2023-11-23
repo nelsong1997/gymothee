@@ -23,7 +23,7 @@ module.exports = client
 
 //add folder json
 //add files config.json, defaultSettings.json, reminds.json (empty arr), userIds.json
-//add empty sub-folders settings, rules
+//add empty sub-folders settings, rules, voicelogs
 
 //default settings
 // {
