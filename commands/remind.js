@@ -222,6 +222,7 @@ function parseDuration(str) {
         "hour": "Hours",
         "d": "Date",
         "day": "Date",
+        "week": "week", //special case
         "mon": "Month",
         "month": "Month",
         "y": "FullYear",
@@ -286,12 +287,16 @@ function parseDuration(str) {
             if (specResult1.error) {
                 //1 min
                 specResult2 = testDurationSpec(wordsArr[0] + wordsArr[1])
-                // if we got an error both times we don't really know how it's formatted (1min vs. 1 min)
-                // so easier to just return both errors for now
-                // in the future could have test func return the "textPart" and don't favor that error if textPart is blank
-                // and the other textPart isn't blank
-                if (specResult2.error) return { error: `Error: ${specResult1.error} and ${specResult2.error}.` }
-                else {
+
+                // probably formatted like 1 min so don't send first error
+                if (specResult2.error && specResult1.textPart==="") {
+                    return { error: `Error: ${specResult2.error}.` }
+                
+                // don't know how it's formatted, return both errors
+                } else if (specResult2.error) {
+                    return { error: `Errors: 1. ${specResult1.error} and 2. ${specResult2.error}`}
+
+                } else {
                     remainderStr = wordsArr.slice(2).join(" ")
                     duration[specResult2.timeUnit] = specResult2.durNum
                     //if the spec still has more stuff in it but didn't error
@@ -333,7 +338,7 @@ function parseDuration(str) {
                 if (specStr !== numStr + textPart) {
                     //weed out weird formats like the text coming first
                     //or text and numbers interspersed
-                    return { error: `Error: Specification "${specStr}" is improperly formatted` }
+                    return { error: `Error: Specification "${specStr}" is improperly formatted`}
                 }
 
                 if ( //handle plurals; "secs" "mins" etc are valid
@@ -344,7 +349,8 @@ function parseDuration(str) {
                 }
                 
                 if (!timeInputs[`${textPart}`]) {
-                    return { error: `"${textPart}" is not a recognized time unit` }
+                    // also return textPart since we won't bother sending this error if it's blank
+                    return { error: `"${textPart}" is not a recognized time unit`, textPart: textPart }
                 } else if (isNaN(num)) {
                     return { error: `${numStr} for unit "${textPart}" is not a number`} 
                 } else if (num < 0) {
@@ -361,9 +367,18 @@ function parseDuration(str) {
 
     let reminderDate = new Date()
 
-    for (let timeUnit in duration) {
+    for (let timeUnit_ in duration) {
+        let timeUnit = timeUnit_
+        let durNum = duration[timeUnit]
+
+        //special case for weeks since they dont have a date method
+        if (timeUnit==="week") {
+            timeUnit = "Date"
+            durNum *= 7
+        }
+
         //ex timeUnit = Seconds => date.setSeconds(date.getSeconds() + duration.Seconds)
-        reminderDate["set" + timeUnit](reminderDate["get" + timeUnit]() + duration[timeUnit])
+        reminderDate["set" + timeUnit](reminderDate["get" + timeUnit]() + durNum)
     }
 
     return { 
