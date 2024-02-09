@@ -116,7 +116,6 @@ async function remind(params, message) {
         if (newRemind.repeat) {
             for (let userId of newRemind.whom) {
                 if (userId===message.author.id) continue;
-                console.log(newRemind.weekdays)
                 sendDm(
                     userId,
                     `Reminder with id: ${remindId} was created by user: ` +
@@ -287,8 +286,11 @@ function parseDuration(str) {
             if (specResult1.error) {
                 //1 min
                 specResult2 = testDurationSpec(wordsArr[0] + wordsArr[1])
-                //could throw both errors?
-                if (specResult2.error) return { error: specResult1.error }
+                // if we got an error both times we don't really know how it's formatted (1min vs. 1 min)
+                // so easier to just return both errors for now
+                // in the future could have test func return the "textPart" and don't favor that error if textPart is blank
+                // and the other textPart isn't blank
+                if (specResult2.error) return { error: `Error: ${specResult1.error} and ${specResult2.error}.` }
                 else {
                     remainderStr = wordsArr.slice(2).join(" ")
                     duration[specResult2.timeUnit] = specResult2.durNum
@@ -342,15 +344,15 @@ function parseDuration(str) {
                 }
                 
                 if (!timeInputs[`${textPart}`]) {
-                    return { error: `"${textPart}" is not a recognized time unit.` }
+                    return { error: `"${textPart}" is not a recognized time unit` }
                 } else if (isNaN(num)) {
                     return { error: `${numStr} for unit "${textPart}" is not a number`} 
                 } else if (num < 0) {
-                    return { error: `Error: Time specified for time unit "${textPart}" cannot be negative.` }
-                } else if (num%1 > 0) {
-                    return { error: `Error: Time specified for time unit "${textPart}" must be an integer.` }
+                    return { error: `Time specified for time unit "${textPart}" cannot be negative` }
+                } else if (Math.abs(num)%1 > 0) {
+                    return { error: `Time specified for time unit "${textPart}" must be an integer` }
                 } else if (duration[timeInputs[`${textPart}`]]) {
-                    return { error: `Error: Time specified for time unit "${textPart}" more than once.` }
+                    return { error: `Time specified for time unit "${textPart}" more than once` }
                 }
                 return { timeUnit: timeInputs[`${textPart}`], durNum: num }
             }
@@ -459,6 +461,7 @@ module.exports = remind
 //maybe would like to remind at 11am
 //maybe should send the reminder id as its own message for easy copying on mobile
 //would maybe like to freeform repeats
+//would like to remind in 1 week
 
 // 9/14/22
 //for better logging, have a cancel prop on reminds; delete upon trigger to
