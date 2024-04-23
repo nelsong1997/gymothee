@@ -62,7 +62,6 @@ async function remind(params, message) {
             return
         }
         newRemind.date = result.date
-        console.log(result)
 
         let result2 = await parseMsgAndRecips(result.remainderStr, message)
         whomStr = result2.whomStr
