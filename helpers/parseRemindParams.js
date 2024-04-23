@@ -26,7 +26,7 @@ async function parseRemindParams(message, remind, keyValuePairs) {
             sendMessage(message.channel, `Error: The value specified for ${key} should be nested in quotes ("value").`)
             return
         }
-        value = value.slice(1, value.length - 1).toLowerCase() //get rid of quotes
+        value = value.slice(1, value.length - 1) //get rid of quotes
 
         if (changes[key]) {
             sendMessage(message.channel, `Error: you can't set the same key (${key}) twice with the same command`)
@@ -144,6 +144,7 @@ async function parseRemindParams(message, remind, keyValuePairs) {
                 remind.whom = usersArrOut
                 break;
             case "deliver":
+                value = value.toLowerCase()
                 if (value==="dm") {
                     remind.deliver = "dm"
                     changes.deliver = "DM"

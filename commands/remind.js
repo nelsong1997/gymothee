@@ -62,6 +62,7 @@ async function remind(params, message) {
             return
         }
         newRemind.date = result.date
+        console.log(result)
 
         let result2 = await parseMsgAndRecips(result.remainderStr, message)
         whomStr = result2.whomStr
@@ -277,7 +278,7 @@ function parseDuration(str) {
         }
     } else {
         //1min, 30sec message @joey#1234
-        let specs = str.toLowerCase().split(", ")
+        let specs = str.split(", ")
         for (let i=0; i<specs.length; i++) {
             let spec = specs[i]
             let wordsArr = spec.split(" ")
@@ -330,12 +331,13 @@ function parseDuration(str) {
             }
 
             function testDurationSpec(specStr) {
+                specStrLower = specStr.toLowerCase()
                 //test the spec str to see if it is a duration spec or not
-                let textPart = specStr.replaceAll(/\d| /g, '')
-                let numStr = specStr.replaceAll(/\D/g, '')
+                let textPart = specStrLower.replaceAll(/\d| /g, '')
+                let numStr = specStrLower.replaceAll(/\D/g, '')
                 let num = Number(numStr)
 
-                if (specStr !== numStr + textPart) {
+                if (specStrLower !== numStr + textPart) {
                     //weed out weird formats like the text coming first
                     //or text and numbers interspersed
                     return { error: `Error: Specification "${specStr}" is improperly formatted`}
