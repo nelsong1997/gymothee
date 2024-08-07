@@ -10,7 +10,10 @@ async function sendMessage(channel, messageText, recursive) {
     //don't want to split messages into chunks of 2000 here because
     //we could end up breaking up formatting text like **
 
-    channel.send(messageText).catch(error => handleError(error))
+    return await channel.send(messageText)
+        .catch(async function(error) {
+            await handleError(error)
+        })
 
     async function handleError(error) {
         // we get an error while trying to send error message => give up

@@ -18,7 +18,7 @@ async function setRulesMessage(message) {
         return
     }
 
-    let reactToMsg = await sendMessage(message.channel,
+    let reactToMsg = await message.channel.send(
         "To finalize rules message setup, react to this message " +
         "with the emoji users should use to agree to the rules."
     )
