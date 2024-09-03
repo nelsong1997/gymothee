@@ -10,7 +10,7 @@ async function ready() {
     
     dailySetRemindTimeouts()
 
-    //setRuleAgreersRole()
+    setRuleAgreersRole()
 
 }
 
@@ -59,7 +59,18 @@ async function setRuleAgreersRole() {
         let rulesMessage = await rulesChannel.messages.fetch(rules.rulesMsg).catch(() => {})
         if (!rulesMessage) continue
         
-        console.log(rulesMessage.reactions.cache)
+        //console.log(rulesMessage.reactions.cache)
+        let trueAgreers = []
+        for (let messageReaction of rulesMessage.reactions.cache) {
+            let reaction = messageReaction[1]
+            if (reaction._emoji.name.codePointAt()!==rules.agreeEmojiId) continue
+            
+            trueAgreerUsers = await reaction.users.fetch().map(user => user.id)
+            console.log(trueAgreers)
+
+            break
+        }
+
         break
 
         // get list of users who reacted with the specific emoji "trueAgreers"
